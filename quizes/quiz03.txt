@@ -1,0 +1,44 @@
+GEMM: C <- beta C + alpha AB
+    with C in K^mxn
+         A in K^mxk
+         B in K^kxn
+         alpha, beta scaling factors
+
+Question 1: School method
+    A_i  :=  ith row
+    B_j  :=  jth col
+
+    for i = 1..m
+        for j = 1..n
+            C_ij <- beta C_ij
+            C_ij <- C_ij + alpha dot(A_i, B_j)
+
+    with dot() being the dot product of two vectors
+
+
+Question 2: Col-major
+    A_l  :=  lth col
+    C_j  :=  jth col
+
+    for j = 1..n
+        for l = 1..k
+            if l = 1
+                beta_tild = beta
+            else
+                beta_tild = 1
+
+            C_j <- beta_tild C_j + alpha B_lj A_l   (daxpy)
+
+
+Question 3: Row-major
+    B_l  :=  lth row
+    C_i  :=  ith row
+
+    for i = 1..m
+        for l = 1..k
+            if l = 1
+                beta_tild = beta
+            else
+                beta_tild = 1
+
+            C_i <- beta_tild C_i + alpha A_il B_l   (daxpy)

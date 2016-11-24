@@ -1,0 +1,21 @@
+Quesion 1:
+    Walltime gives back the number of hardware dependent ticks since
+    a process is started.
+    CPU Time only counts the ticks while the process is actually processed
+    on the CPU.
+
+Question 2:
+    The process of initializing the matrix can use the cash,
+    when the storage format is the same as writing the values
+    for initialization.
+    Hence the benchmark is better for col major storage because
+    initializing also goes col major.
+    We could change initMatrix by switching inner and outer loop
+    to getter a better result for row major stored matrixes.
+
+Question 3:
+    When the size of a Matrix is small and the initialization very fast
+    the granularity of time is too big to measure the actual time used.
+    To get reliable results we do the short process several times until
+    a minimum time MIN_T is reached. To get the precise average time
+    we afterwards devide by the number of times the process was executed.

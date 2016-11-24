@@ -1,0 +1,8 @@
+Question page 01:
+1. the offset of two subsequent array accesses is incRowA * sizeof(double)
+    = 1*8 = 8 bytes
+2. n * 8 bytes because incRowA = n
+
+3. becaues n > 1000 only one number is taken from each cashline loaded
+    in the second case max 64/sizeof(double) = 8
+    can be fetched from one cashline.

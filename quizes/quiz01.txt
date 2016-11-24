@@ -1,0 +1,13 @@
+Question 1:
+a is stored globally
+b is stored on heap
+c is stored on stack
+d is stored on heap
+
+Question 2:
+Local variables are deallocated as soon as
+the function they are used in terminates.
+
+Question 3:
+The storage on heap has to be deallocated
+manually by using free(ptr_to_start);
