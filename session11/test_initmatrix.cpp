@@ -132,9 +132,15 @@ int main() {
 
     GeMatrixCombinedConstView<GeMatrix<double>,GeMatrix<double>>
     DIFF(A, E, [&] (double a, double b) -> double {
-        fmt::printf("Diff(a,b): &4.1lf\n", a-b);
-        return a-b;
+        return fabs(a-b);
     });
     fmt::printf("Diff(E,F):\n");
     print_matrix(DIFF);
+
+    double diffSum = 0;
+    applyGeMatrix(DIFF, [&] (std::size_t i, std::size_t j, double ref) mutable 
+                  -> void {
+                    diffSum += ref;
+    });
+    fmt::printf("\nThe differen of A and E is: %6.1lf\n", diffSum);
 }

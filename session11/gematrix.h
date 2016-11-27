@@ -108,35 +108,32 @@ struct GeMatrixView
     ElementType*    data;
 };
 
-template <typename GeMatrix1, typename GeMatrix2>
+template <typename Matrix1, typename Matrix2>
 struct GeMatrixCombinedConstView
 {
-    typedef typename std::common_type<typename GeMatrix1::ElementType,
-                                      typename GeMatrix2::ElementType>::type
-            ElementType;
-    typedef typename std::common_type<typename GeMatrix1::Index,
-                                      typename GeMatrix2::Index>::type
-            Index;
+    typedef typename std::common_type<typename Matrix1::ElementType,
+        typename Matrix2::ElementType>::type ElementType;
+    typedef typename std::common_type<typename Matrix1::Index,
+        typename Matrix2::Index>::type Index;
 
     const Index m;
     const Index n;
-    const GeMatrix1& A;
-    const GeMatrix2& B;
-    std::function<ElementType(ElementType, ElementType)> elementFunc;
+    const Matrix1& A;
+    const Matrix2& B;
+    std::function<ElementType(ElementType, ElementType)> apply;
 
-    template<typename GeFunc>
-    GeMatrixCombinedConstView(const GeMatrix1& A, const GeMatrix2& B,
-                              GeFunc elementFunc):
-        m(A.m), n(A.n), A(A), B(B), elementFunc(elementFunc)
+    template <typename ApplyOperator>
+    GeMatrixCombinedConstView(const Matrix1& A, const Matrix2& B,
+        ApplyOperator apply)
+    : m(A.m), n(A.n), A(A), B(B), apply(apply)
     {
-        assert(A.n == B.n && A.m == B.m);
+        assert(A.m == B.m && A.n == B.n);
     }
 
-    const ElementType &
+    const ElementType
     operator()(Index i, Index j) const
     {
-        assert(i<m && j<n);
-        return elementFunc(A(i,j),B(i,j));
+        return apply(A(i, j), B(i, j));
     }
 
 };
