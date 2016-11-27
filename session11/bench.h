@@ -32,7 +32,7 @@ initGeMatrix(Index m, Index n, T *A, Index incRowA, Index incColA,
 {
     for (Index j=0; j<n; ++j) {
         for (Index i=0; i<m; ++i) {
-            A[i*incRowA+j*incColA] = initValue(i, j, m, n);
+            A[i*incRowA+j*incColA] = initValue(i, j);
         }
     }
 }

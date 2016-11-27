@@ -112,7 +112,7 @@ struct GeMatrixView
 //
 template <typename GeMatrix, typename Initvalue>
 void
-initGeMatrix(GeMatrix &A,initvalue initValue)
+initGeMatrix(GeMatrix &A,Initvalue initValue)
 {
     bench::initGeMatrix(A.m, A.n, A.data, A.incRow, A.incCol, initValue);
 }

@@ -1,3 +1,25 @@
+Questions to session 11:
+
+Why do we use an interface?
+wouldn't it be better to implement (copy paste) a direct version
+to our new matrix class or changing the ones in bench.h ??
+E.g. the assertions we have in our Matrix class are not invoced!
+
+
+question 1 page 3:
+The funcion object is created, when instantiated and ceases to exist, when it's
+work is done. Meaning when the funcion gave back the return value.
+It is a temporary object living on the stack.
+
+question 2 page 3:
+std::random_device()() needs to paares of parantheses because:
+with the first we call the constructor,
+with the second we make a call to itself to actually produce a uniformly
+distributed random number as a seed for mt19937.
+
+
+
+
 Question page 01:
 1. the offset of two subsequent array accesses is incRowA * sizeof(double)
     = 1*8 = 8 bytes
