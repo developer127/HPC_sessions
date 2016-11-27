@@ -108,6 +108,20 @@ struct GeMatrixView
 };
 
 //
+//  general template to handle elements of a matrix
+//
+template <typename GeMatrix, typename GeFunc>
+void
+applyGeMatrix(GeMatrix &A, GeFunc geFunc)
+{
+    for (typename GeMatrix::Index j=0; j<A.n; ++j) {
+        for (typename GeMatrix::Index i=0; i<A.m; ++i) {
+            geFunc(i, j, A(i,j));
+        }
+    }
+}
+
+//
 //  Interface for bench
 //
 template <typename GeMatrix, typename Initvalue>

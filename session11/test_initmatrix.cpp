@@ -2,6 +2,7 @@
 #include <fmt/printf.hpp>
 #include "gematrix.h"
 #include <complex>
+#include <cmath>
 
 template<typename T, typename Index = std::size_t>
 struct AscendingValue {
@@ -79,12 +80,30 @@ int main() {
     std::mt19937 mt(random());
     std::uniform_real_distribution<double> uniform(-100, 100);
     GeMatrix<double> C(5, 5, StorageOrder::ColMajor);
-    initGeMatrix(C, [=] (std::size_t i, std::size_t j) mutable -> double{
+    initGeMatrix(C, [=] (std::size_t i, std::size_t j) mutable -> double {
         return uniform(mt);
     });
 
     fmt::printf("C:\n");
     print_matrix(C);
+    double maxValue = 0;
+
+    auto maxElement = [&] (std::size_t i, std::size_t j, double ref) -> void {
+        if(abs(ref)>maxValue) {
+            maxValue = abs(ref);
+        }
+    };
+    fmt::printf("%5.1lf\n",maxValue);
+    maxElement(1,2,23);
+    fmt::printf("%5.1lf\n",maxValue);
+    applyGeMatrix(C, [&] (std::size_t i, std::size_t j, double ref) -> void {
+        if(fabs(ref)>maxValue) {
+            maxValue = fabs(ref);
+        }
+    });
+
+    fmt::printf("Max absValue of C is: %6.1lf\n", maxValue);
+
     GeMatrix<double> D(4, 8, StorageOrder::ColMajor);
     std::uniform_real_distribution<double> uniform_2(0, 300/(C.m*C.n));
     double randomNumber = -100.0;
@@ -94,4 +113,19 @@ int main() {
     });
     fmt::printf("D:\n");
     print_matrix(D);
+
+    GeMatrix<double> E(3, 7, StorageOrder::ColMajor);
+    applyGeMatrix(E, [&] (std::size_t i, std::size_t j, double ref) -> void {
+        E(i,j) = E.m *j + i +1;
+    });
+    fmt::printf("E:\n");
+    print_matrix(E);
+
+    double sumE = 0;
+    applyGeMatrix(E, [&] (std::size_t i, std::size_t j, double ref) mutable
+                  -> void {
+        sumE += ref;
+    });
+    fmt::printf("\nThe sum of all Elements of E: %6.1lf\n", sumE);
+
 }

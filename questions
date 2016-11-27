@@ -5,6 +5,10 @@ wouldn't it be better to implement (copy paste) a direct version
 to our new matrix class or changing the ones in bench.h ??
 E.g. the assertions we have in our Matrix class are not invoced!
 
+What if I want to use a function created by a lamda expression more than once?
+-> I can define the function as
+    auto function = lambda exp.
+and use later function();
 
 question 1 page 3:
 The funcion object is created, when instantiated and ceases to exist, when it's
