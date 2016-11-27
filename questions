@@ -5,6 +5,8 @@ wouldn't it be better to implement (copy paste) a direct version
 to our new matrix class or changing the ones in bench.h ??
 E.g. the assertions we have in our Matrix class are not invoced!
 
+How to deal with the warnings about unused parameters?
+
 What if I want to use a function created by a lamda expression more than once?
 -> I can define the function as
     auto function = lambda exp.

@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cassert>
 #include "bench.h"
+#include <functional>
 
 namespace matvec {
 
@@ -105,6 +106,39 @@ struct GeMatrixView
 
     const Index     m, n, incRow, incCol;
     ElementType*    data;
+};
+
+template <typename GeMatrix1, typename GeMatrix2>
+struct GeMatrixCombinedConstView
+{
+    typedef typename std::common_type<typename GeMatrix1::ElementType,
+                                      typename GeMatrix2::ElementType>::type
+            ElementType;
+    typedef typename std::common_type<typename GeMatrix1::Index,
+                                      typename GeMatrix2::Index>::type
+            Index;
+
+    const Index m;
+    const Index n;
+    const GeMatrix1& A;
+    const GeMatrix2& B;
+    std::function<ElementType(ElementType, ElementType)> elementFunc;
+
+    template<typename GeFunc>
+    GeMatrixCombinedConstView(const GeMatrix1& A, const GeMatrix2& B,
+                              GeFunc elementFunc):
+        m(A.m), n(A.n), A(A), B(B), elementFunc(elementFunc)
+    {
+        assert(A.n == B.n && A.m == B.m);
+    }
+
+    const ElementType &
+    operator()(Index i, Index j) const
+    {
+        assert(i<m && j<n);
+        return elementFunc(A(i,j),B(i,j));
+    }
+
 };
 
 //

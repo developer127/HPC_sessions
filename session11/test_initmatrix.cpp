@@ -96,7 +96,9 @@ int main() {
     fmt::printf("%5.1lf\n",maxValue);
     maxElement(1,2,23);
     fmt::printf("%5.1lf\n",maxValue);
-    applyGeMatrix(C, [&] (std::size_t i, std::size_t j, double ref) -> void {
+
+    applyGeMatrix(C, [&maxValue] (std::size_t i, std::size_t j, double ref)
+                  mutable -> void {
         if(fabs(ref)>maxValue) {
             maxValue = fabs(ref);
         }
@@ -128,4 +130,11 @@ int main() {
     });
     fmt::printf("\nThe sum of all Elements of E: %6.1lf\n", sumE);
 
+    GeMatrixCombinedConstView<GeMatrix<double>,GeMatrix<double>>
+    DIFF(A, E, [&] (double a, double b) -> double {
+        fmt::printf("Diff(a,b): &4.1lf\n", a-b);
+        return a-b;
+    });
+    fmt::printf("Diff(E,F):\n");
+    print_matrix(DIFF);
 }
