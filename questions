@@ -1,16 +1,32 @@
+Questions to session 12:
+downcast from std::complex<double> to std::complex<float> does give no
+warning because the complex implementation compresses all warnings!!
+dangerous because we could loose precission when implicit typecast happens
+unwanted in an algorithm
+
+The function ugemm that gets overloaded once. If the parameters have different
+types it looks up to find a template to create it first,
+before a typecast is invoced!
+
+The Reference Implementation is used as "the simplest" version that can be
+further optimized.
+
 Questions to session 11:
 
 Why do we use an interface?
 wouldn't it be better to implement (copy paste) a direct version
 to our new matrix class or changing the ones in bench.h ??
 E.g. the assertions we have in our Matrix class are not invoced!
+-> due to historic reasons. The extra functions calls doen't matter because
+the compiler optimizes it away!
 
 How to deal with the warnings about unused parameters?
 
 What if I want to use a function created by a lamda expression more than once?
 -> I can define the function as
     auto function = lambda exp.
-and use later function();
+and use later function with ()
+or fuction as function pointer without parantheses
 
 question 1 page 3:
 The funcion object is created, when instantiated and ceases to exist, when it's

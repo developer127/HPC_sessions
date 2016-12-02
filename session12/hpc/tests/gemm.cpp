@@ -138,7 +138,7 @@ main()
     // Element type for A, B and C
     typedef float                TA;
     typedef float                TB;
-    typedef std::complex<double> TC;
+    typedef float                TC;
 
     // Type for scalar factors
     typedef float   Alpha;
