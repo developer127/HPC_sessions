@@ -1,0 +1,44 @@
+Question 1:
+class Helper {
+    private:
+        double& sum;
+
+    public:
+        Helper(double& sum): sum(sum) {
+        }
+
+        double operator() (double Aij, std::size_t i, std::size_t j) const {
+            sum += Aij;
+        }
+};
+
+Remark: The lambda expression in the question takes sum as reference.
+        It wants to change it. Therefore a mutabel that would cancle the const
+        in our Helper class.
+
+The lamda expressen is replaced by:
+applyGeMatrix(A,Helper(&sum));
+
+
+
+Question 2:
+template <typename T, typename Index =std::size_t>
+auto indexDevisibleByTwo = [val1, val2](Index i, Index j) -> T {
+    return ((i+j)%2==0) ? val1 : va2;
+};
+
+int main() {
+    using namespace matvec;
+    GeMatrx<double> A(5,7, StorageOrder::ColMajor);
+    double val1 = 1;
+    double val2 = 2;
+    init GeMatrix(A, indexDevisibleByTwo<double>);
+    fmt::printf("A: \n");
+    printMatrix(A);
+}
+
+
+Question 3:
+The temporary function created by a lambda expression is const by default.
+If we want to change the state of a captured varible we need to cancle the const
+by adding mutable.
