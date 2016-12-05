@@ -43,11 +43,11 @@ mgemm(Size mc, Size nc, Size kc,
                 kernels::ugemm(kc, alpha,
                                &A[i*kc*MR], &B[j*kc*NR],
                                TC(0),
-                               C_, Index(1), MR);
+                               C_, Index(1), (Index)MR);
                 gescal(mr, nr, beta,
                        &C[i*MR*incRowC+j*NR*incColC],
                        incRowC, incColC);
-                geaxpy(mr, nr, TC(1), C_, Index(1), MR,
+                geaxpy(mr, nr, TC(1), C_, Index(1), (Index)MR,
                        &C[i*MR*incRowC+j*NR*incColC],
                        incRowC, incColC);
             }

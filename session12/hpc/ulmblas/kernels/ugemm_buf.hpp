@@ -17,22 +17,9 @@ ugemm(Size kc, T alpha,
     const Size NR = BlockSize<T>::NR;
     T P[BlockSize<T>::MR*BlockSize<T>::NR];
 
-    for (Size l=0; l<MR*NR; ++l) {
-        P[l] = T(0);
-    }
-    for (Size l=0; l<kc; ++l) {
-        for (Size j=0; j<NR; ++j) {
-            for (Size i=0; i<MR; ++i) {
-                P[i+j*MR] += A[i+l*MR]*B[l*NR+j];
-            }
-        }
-    }
+    ugemm(kc, alpha, A, B, T(0), P, Index(1), Index(MR));
     gescal(MR, NR, beta, C, incRowC, incColC);
-    for (Size j=0; j<NR; ++j) {
-        for (Size i=0; i<MR; ++i) {
-            C[i*incRowC+j*incColC] += alpha*P[i+j*MR];
-        }
-    }
+    geaxpy(MR, NR, T(1), P, Index(1), Index(MR), C, incRowC, incColC);
 }
 
 }}}     // namespace hpc::ulmblas::kernels

@@ -1,5 +1,5 @@
 #include <cstdlib>
-#include <fmt/printf.hpp>
+#include <printf.hpp>
 #include "gematrix.h"
 #include <complex>
 #include <cmath>
@@ -97,12 +97,7 @@ int main() {
     maxElement(1,2,23);
     fmt::printf("%5.1lf\n",maxValue);
 
-    applyGeMatrix(C, [&maxValue] (std::size_t i, std::size_t j, double ref)
-                  mutable -> void {
-        if(fabs(ref)>maxValue) {
-            maxValue = fabs(ref);
-        }
-    });
+    applyGeMatrix(C, maxElement);
 
     fmt::printf("Max absValue of C is: %6.1lf\n", maxValue);
 
