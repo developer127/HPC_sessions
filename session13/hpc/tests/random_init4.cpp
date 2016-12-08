@@ -1,4 +1,4 @@
-#include <thread>
+#include <thread>   //compile with -lpthread
 #include <random>
 #include <hpc/matvec/gematrix.h>
 #include <hpc/matvec/apply.h>
@@ -21,15 +21,15 @@ randomInit(MA& A) {
 
 int main() {
     using namespace hpc::matvec;
-    GeMatrix<double> A(1000, 1000);
+    GeMatrix<double> A(1000, 1000, StorageOrder::RowMajor);
 
     std::size_t jobSize = A.numCols/2;
 
-    auto A_1 = A(A.numRows, jobSize, 0, 0);
-    auto A_2 = A(A.numRows, jobSize, 0, jobSize);
+    auto A_1 = A(0, 0, A.numRows, jobSize);
+    auto A_2 = A(0, jobSize, A.numRows, jobSize);
 
-    std::thread t1([&](){randomInit(A_1);});
-    std::thread t2([&](){randomInit(A_2);});
+    std::thread t1([&](){ randomInit(A_1); });
+    std::thread t2([&](){ randomInit(A_2); });
 
     t1.join();
     t2.join();
@@ -37,4 +37,6 @@ int main() {
     /* print a small block of each of the initialized matrices */
     auto A1 = A(500, 500, 5, 5);
     print(A1, "A1");
+    auto A2 = A(100, 100, 5, 5);
+    print(A2, "A2");
 }
