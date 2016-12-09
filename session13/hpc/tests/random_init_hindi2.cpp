@@ -69,7 +69,7 @@ int main() {
 
     wall_time.tic();
     {
-        GeMatrix<double> A(N, N, StorageOrder::RowMajor);
+        GeMatrix<double> A(N, N, StorageOrder::ColMajor);
         randomInit(A);
         global = A(7, 2);
     }
