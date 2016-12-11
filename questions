@@ -1,3 +1,8 @@
+Questions tu session 14:
+How do i implement/overwrite the asignment operator.
+- solved the include copy.h with adding forward declarations of the matirx
+    classes to isgematrix.h
+
 Questions to session 12:
 downcast from std::complex<double> to std::complex<float> does give no
 warning because the complex implementation compresses all warnings!!

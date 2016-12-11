@@ -4,9 +4,19 @@
 #include <cassert>
 #include <type_traits>
 #include <hpc/aux/iscomplex.h>
-#include <hpc/matvec/gematrix.h>
+//#include <hpc/matvec/gematrix.h>
 
 namespace hpc { namespace matvec {
+
+template <typename T, typename I>
+struct GeMatrix;
+
+template <typename T, typename I>
+struct GeMatrixConstView;
+
+template <typename T, typename I>
+struct GeMatrixView;
+
 
 template <typename Any>
 struct IsGeMatrix_

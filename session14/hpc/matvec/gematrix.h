@@ -3,7 +3,7 @@
 
 #include <cassert>
 #include <cstdlib>
-#include <copy.h>
+#include <hpc/matvec/copy.h>
 
 
 namespace hpc { namespace matvec {
@@ -43,10 +43,16 @@ struct GeMatrix
         delete[] data;
     }
 
-    operator = (const GeMatrix &rhs)
+    /*
+    template <typename MA>
+    typename std::enable_if<IsGeMatrix<MA>::value, void>::type &
+    operator= (MA &rhs)
     {
-        copy(rhs, this);
-    }
+        if(this != &rhs){
+            copy(rhs, this);
+        }
+        return *this;
+    }*/
 
     const ElementType &
     operator()(Index i, Index j) const
