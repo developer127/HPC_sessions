@@ -43,16 +43,16 @@ struct GeMatrix
         delete[] data;
     }
 
-    /*
     template <typename MA>
-    typename std::enable_if<IsGeMatrix<MA>::value, void>::type &
-    operator= (MA &rhs)
+    typename std::enable_if<IsGeMatrix<MA>::value,
+        NoView>::type &
+    operator=(MA &rhs)
     {
         if(this != &rhs){
-            copy(rhs, this);
+            copy(rhs, *this);
         }
         return *this;
-    }*/
+    }
 
     const ElementType &
     operator()(Index i, Index j) const
@@ -110,6 +110,17 @@ struct GeMatrixView
           incRow(rhs.incRow), incCol(rhs.incCol),
           data(rhs.data)
     {
+    }
+
+    template <typename MA>
+    typename std::enable_if<IsGeMatrix<MA>::value,
+        View>::type &
+    operator=(MA &rhs)
+    {
+        if(this != &rhs){
+            copy(rhs, *this);
+        }
+        return *this;
     }
 
     const ElementType &

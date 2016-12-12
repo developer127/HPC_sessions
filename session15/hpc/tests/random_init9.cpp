@@ -7,40 +7,33 @@
 #include <hpc/matvec/apply.h>
 #include <hpc/matvec/print.h>
 #include <hpc/aux/slices.h>
+#include <hpc/aux/randomEnginePool.hpp>
 
-struct MyRandomGenerator {
-    MyRandomGenerator() : mt(std::random_device()()), uniform(-100, 100) {
-    }
-    double gen() {
-        std::lock_guard<std::mutex> lock(mutex);
-        return uniform(mt);
-    }
 
-    private:
-        std::mutex mutex;
-        std::mt19937 mt;
-        std::uniform_real_distribution<double> uniform;
-};
-
-template<typename MA, typename RNG>
+template<typename MA, typename REPool>
 typename std::enable_if<hpc::matvec::IsRealGeMatrix<MA>::value, void>::type
-randomInit(MA& A, RNG& myGen) {
+randomInit(MA& A, REPool& rePool) {
     using ElementType = typename MA::ElementType;
     using Index = typename MA::Index;
 
+    std::uniform_real_distribution<double> uniform(-100,100);
+    auto engine = rePool.get();
+
     hpc::matvec::apply(A, [&](ElementType& val, Index i, Index j) -> void {
-                       val = myGen.gen();
+                       val = uniform(engine);
     });
+    rePool.free(engine);
 }
 
 int main() {
     using namespace hpc::matvec;
     using namespace hpc::aux;
 
+    RandomEnginePool<std::mt19937> repool;
+
     GeMatrix<double> A(51, 7);
     unsigned int nof_threads = std::thread::hardware_concurrency();
 
-    MyRandomGenerator myGen;
     typedef GeMatrix<double>::Index Index;
 
     std::vector<std::thread> threads(nof_threads);
@@ -49,8 +42,8 @@ int main() {
         auto firstRow = slices.offset(index);
         auto numRows = slices.size(index);
         auto A_ = A(firstRow, 0, numRows, A.numCols);
-        threads[index] = std::thread([=,&myGen]() mutable {
-                                     randomInit(A_, myGen); });
+        threads[index] = std::thread([=,&repool]() mutable {
+                                     randomInit(A_, repool); });
     }
     for (Index index = 0; index < nof_threads; ++index) {
         threads[index].join();
