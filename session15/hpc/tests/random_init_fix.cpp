@@ -7,8 +7,8 @@
 #include <hpc/matvec/apply.h>
 #include <hpc/matvec/print.h>
 #include <hpc/aux/slices.h>
-#include <hpc/aux/randomEnginePool.hpp>
-#include <hpc/aux/randomEngineGuard.hpp>
+#include <hpc/aux/randomEnginePoolFixSize.hpp>
+#include <hpc/aux/randomEngineGuardFixSize.hpp>
 
 
 template<typename MA, typename REPool>
@@ -32,10 +32,10 @@ int main() {
     using namespace hpc::matvec;
     using namespace hpc::aux;
 
-    RandomEnginePool<std::mt19937> repool;
-
     GeMatrix<double> A(51, 7);
     unsigned int nof_threads = std::thread::hardware_concurrency();
+
+    RandomEnginePool<std::mt19937> repool(2);
 
     typedef GeMatrix<double>::Index Index;
 
