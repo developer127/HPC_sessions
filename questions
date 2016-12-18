@@ -1,4 +1,10 @@
-Questions tu session 14:
+Questions to session 16:
+it doesn't make sense to return -1 if the type is std::size_t !
+
+Could we use our blocked gemm algorithm inside trlsm and trusm?
+Problem we overwrite B !
+
+Questions to session 14:
 How do i implement/overwrite the asignment operator.
 - solved the include copy.h with adding forward declarations of the matirx
     classes to isgematrix.h
