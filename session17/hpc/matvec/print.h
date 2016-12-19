@@ -4,7 +4,7 @@
 #include <complex>
 #include <type_traits>
 #include <hpc/matvec/isgematrix.h>
-#include <fmt/printf.hpp> // from https://github.com/afborchert/fmt
+#include <printf.hpp> // from https://github.com/afborchert/fmt
 
 namespace hpc { namespace matvec {
 

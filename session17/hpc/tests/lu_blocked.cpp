@@ -6,8 +6,7 @@
 #include <hpc/matvec/gematrix.h>
 #include <hpc/matvec/mm.h>
 #include <hpc/matvec/print.h>
-#include <hpc/ulmlapack/getf2.hpp>
-#include <hpc/ulmblas/swap.hpp>
+#include <hpc/ulmlapack/getrf.hpp>
 
 using namespace hpc::matvec;
 
@@ -104,8 +103,7 @@ main()
     GeMatrix<std::ptrdiff_t, std::ptrdiff_t>        p(m_max, 1);
     hpc::aux::WallTime<double>  timer;
 
-    for (std::ptrdiff_t m=m_min, n=n_min; m<=m_max && n<=n_max;
-         m+=m_inc, n+=n_inc) {
+    for (std::ptrdiff_t m=m_min, n=n_min; m<=m_max && n<=n_max; m+=m_inc, n+=n_inc) {
 
         randomInit(m, n, A.data, A.incRow, A.incCol);
         hpc::ulmblas::gecopy(m, n,
@@ -114,7 +112,7 @@ main()
         //print(A_org, "A_org");
 
         timer.tic();
-        std::ptrdiff_t info = hpc::ulmlapack::getf2(m, n,
+        std::ptrdiff_t info = hpc::ulmlapack::getrf(m, n,
                                                     A.data, A.incRow, A.incCol,
                                                     p.data, p.incRow);
         double t = timer.toc();

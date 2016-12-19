@@ -1,6 +1,6 @@
 #include <cassert>
 #include <random>
-#include <fmt/printf.hpp>
+#include <printf.hpp>
 #include <hpc/matvec/copy.h>
 #include <hpc/matvec/gematrix.h>
 #include <hpc/matvec/mm.h>
@@ -37,8 +37,8 @@ main()
     typedef double       T;
     typedef std::size_t  Index;
 
-    const Index   m = 600;
-    const Index   n = 800;
+    const Index   m = 8;
+    const Index   n = 8;
 
     GeMatrix<T>      A(m, m);
     GeMatrix<T>      X(m, n);
@@ -64,6 +64,8 @@ main()
     //
     //  Solve P*L*U*X = B
     //
+
+    print(p, "Pivot");
     hpc::ulmlapack::swap(B.numRows, B.numCols, B.data, B.incRow, B.incCol,
                          Index(0), B.numRows,
                          p.data, p.incRow);
@@ -73,6 +75,7 @@ main()
     hpc::ulmblas::trusm(m, n, T(1), false,
                         A.data, A.incRow, A.incCol,
                         B.data, B.incRow, B.incCol);
+
 
     //
     //  Compute residual

@@ -15,8 +15,8 @@ trusm(Index         m, Index         n,
       TB            *B, Index incRowB, Index incColB)
 {
     if(unitDiag) {
-        for (Index i = m-2; i>=0; --i) {
-            for (Index j=m-1; j>i; --j) {
+        for (std::ptrdiff_t i = m-2; i>=0; --i) {
+            for (std::ptrdiff_t j=m-1; j>i; --j) {
                 hpc::ulmblas::geaxpy(Index(1),n,
                        -A[i*incRowA + j*incColA],
                        &B[j*incRowB], incRowB, incColB,
@@ -24,16 +24,16 @@ trusm(Index         m, Index         n,
             }
         }
     } else {
-        for (Index i = m-1; i>=0; --i) {
-            hpc::ulmblas::scal(n,
-                               TA(1)/A[i*(incRowA+incColA)],
-                               &B[i*incRowB], incColB);
-            for (Index j=m-1; j>i; --j) {
+        for (std::ptrdiff_t i = m-1; i>=0; --i) {
+            for (std::ptrdiff_t j=m-1; j>i; --j) {
                 hpc::ulmblas::geaxpy(Index(1),n,
                        -A[i*incRowA + j*incColA],
                        &B[j*incRowB], incRowB, incColB,
                        &B[i*incRowB], incRowB, incColB);
             }
+            hpc::ulmblas::scal(n,
+                               TA(1)/A[i*(incRowA+incColA)],
+                               &B[i*incRowB], incColB);
         }
 
     }
