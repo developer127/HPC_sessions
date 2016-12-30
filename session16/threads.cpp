@@ -5,6 +5,7 @@
 int main() {
    unsigned int counter = 0;
    unsigned int nof_threads = 1<<15;
+   fmt::printf("nof_threads used for testing: %d\n", nof_threads);
 
    hpc::aux::WallTime<double> wall_time;
    wall_time.tic();
