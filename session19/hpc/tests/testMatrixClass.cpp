@@ -70,18 +70,21 @@ main()
     using namespace hpc::matvec;
 
     typedef double       T;
+    typedef std::size_t  Size;
     typedef std::size_t  Index;
 
-    GeMatrix<T, Index> A(8,10);
+    GeMatrix<T, Size, Index> A(8,10);
 
     auto x = A.row(3);
     auto y = A.col(4);
+    auto z = x(1,4,2);
 
     randomInit(A);
 
     print(A, "A");
     print(x, "x");
     print(y, "y");
+    print(z, "z");
 
     auto B = A(1, 2, 6, 5);
 

@@ -14,20 +14,20 @@ struct IsGeMatrix_
     static constexpr bool value = false;
 };
 
-template <typename T, typename I>
-struct IsGeMatrix_<GeMatrix<T,I> >
+template <typename T, typename S, typename I>
+struct IsGeMatrix_<GeMatrix<T,S,I> >
 {
     static constexpr bool value = true;
 };
 
-template <typename T, typename I>
-struct IsGeMatrix_<GeMatrixView<T,I> >
+template <typename T, typename S, typename I>
+struct IsGeMatrix_<GeMatrixView<T,S,I> >
 {
     static constexpr bool value = true;
 };
 
-template <typename T, typename I>
-struct IsGeMatrix_<GeMatrixConstView<T,I> >
+template <typename T, typename S, typename I>
+struct IsGeMatrix_<GeMatrixConstView<T,S,I> >
 {
     static constexpr bool value = true;
 };

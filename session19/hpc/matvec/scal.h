@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <hpc/ulmblas/gescal.h>
 #include <hpc/matvec/isgematrix.h>
+#include <hpc/matvec/isdensevector.hpp>
 
 namespace hpc { namespace matvec {
 
@@ -20,6 +21,14 @@ scal(const Alpha &alpha, MA &A)
 
     ulmblas::gescal(m, n, alpha,
                     A.data, A.incRow, A.incCol);
+}
+
+template <typename Alpha, typename VX>
+typename std::enable_if<IsDenseVector<VX>::value,
+         void>::type
+scal(const Alpha &alpha, VX &x)
+{
+    ulmblas::scal(x.length, alpha, x.data, x.inc);
 }
 
 } } // namespace matvec, hpc

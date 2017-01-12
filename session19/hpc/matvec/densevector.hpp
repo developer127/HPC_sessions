@@ -35,7 +35,7 @@ struct DenseVector
     const ElementType &
     operator()(Size i) const
     {
-        assert(Size(i)<length);
+        assert(i<length);
         return data[i*inc];
     }
 
