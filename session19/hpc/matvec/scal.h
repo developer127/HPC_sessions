@@ -4,6 +4,7 @@
 #include <cassert>
 #include <type_traits>
 #include <hpc/ulmblas/gescal.h>
+#include <hpc/ulmblas/scal.hpp>
 #include <hpc/matvec/isgematrix.h>
 #include <hpc/matvec/isdensevector.hpp>
 

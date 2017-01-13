@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <hpc/ulmblas/gecopy.h>
 #include <hpc/matvec/isgematrix.h>
+#include <hpc/matvec/isdensevector.hpp>
 
 namespace hpc { namespace matvec {
 
@@ -26,6 +27,25 @@ copy(const MA &A, MB &B)
     ulmblas::gecopy(m, n,
                     A.data, A.incRow, A.incCol,
                     B.data, B.incRow, B.incCol);
+}
+
+template <typename VX, typename VY>
+typename std::enable_if<IsDenseVector<VX>::value
+                     && IsDenseVector<VY>::value,
+         void>::type
+copy(const VX &x, VY &y)
+{
+    assert(x.length==y.length);
+
+    typedef typename std::common_type<typename VX::Index,
+                                      typename VY::Index>::type  Index;
+    typedef VY::Size Size;
+
+    const Index lenght = x.length;
+    
+    for(Size i = 0; i<length; ++i) {
+        VY[i*VY.inc] = VX[i*VX.inc];
+    }
 }
 
 } } // namespace matvec, hpc

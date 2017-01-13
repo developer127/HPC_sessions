@@ -1,6 +1,6 @@
 #include <cassert>
 #include <random>
-#include <printf.hpp>
+#include <fmt/printf.hpp>
 #include <hpc/aux/walltime.h>
 #include <hpc/matvec/copy.h>
 #include <hpc/matvec/gematrix.h>

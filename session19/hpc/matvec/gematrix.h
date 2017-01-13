@@ -17,6 +17,12 @@ template <typename T, typename S, typename I>
 template <typename T, typename S, typename I>
     struct GeMatrixConstView;
 
+template <typename T, typename S, typename I>
+    struct DenseVectorConstView;
+
+template <typename T, typename S, typename I>
+    struct DenseVectorView;
+
 template <typename T, typename S=std::size_t, typename I=std::size_t>
 struct GeMatrix
 {

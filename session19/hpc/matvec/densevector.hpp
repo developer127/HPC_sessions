@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <hpc/matvec/copy.h>
 
 namespace hpc { namespace matvec {
 
@@ -31,6 +32,18 @@ struct DenseVector
     {
         delete[] data;
     }
+
+    template <typename VX>
+    typename std::enable_if<IsDenseVector<VX>::value,
+        NoView>::type &
+    operator=(VX &rhs)
+    {
+        if(this != &rhs){
+            copy(rhs, *this);
+        }
+        return *this;
+    }
+
 
     const ElementType &
     operator()(Size i) const
