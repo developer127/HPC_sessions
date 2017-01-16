@@ -1,3 +1,18 @@
+Questions to session 19:
+In the LU Factorisation we tested ajj ==0 for singularity of the matrix.
+Does this make sense or would it be better to test for < eps?
+    It's not the task of LU factorisation to handel singular matrices.
+    To do so we would want to test heuristically for the condition of a matrix.
+    By testing for < eps we would declare a matrix with eps/2 on the diagonal
+    to be a singular matrix. But with LU we still can derive it propperly.
+    What we could / should do on the devision by ajj:
+    if(abs(ajj)< safemin) {
+        alpha = 1/ajj;
+        scal();
+    } else {
+        aij <- aij/ajj;
+    }
+
 Questions to session 16:
 it doesn't make sense to return -1 if the type is std::size_t !
 
