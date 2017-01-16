@@ -36,6 +36,22 @@ mt_randomInit(MA& A, RandomEnginePool& repool) {
    }
 }
 
+template<typename MA>
+auto mt_asum(MA &A) -> decltype(asum(A))
+{
+    using ElementType = typename MA::ElementType;
+    using Index = typename MA::Index;
+
+    ElementType sum = ElementType(0);
+
+    #pragma omp parallel for reduction(+:sum)
+    for(Index row=0; row<A.numRows; ++row) {
+        auto A_ = A(row, 0, 1, A.numCols);
+        sum += hpc::matvec::asum(A_);
+    }
+    return sum;
+}
+
 int main() {
    using namespace hpc::matvec;
    using namespace hpc::aux;
@@ -43,4 +59,7 @@ int main() {
 
    GeMatrix<double> A(51, 7);
    mt_randomInit(A, repool);
+   double sum = mt_asum(A);
+   fmt::printf("The absSum of the Values of A is: %4.1lf\n", sum);
+   fmt::printf("To check the non parallel version gives: %4.1lf\n", asum(A));
 }

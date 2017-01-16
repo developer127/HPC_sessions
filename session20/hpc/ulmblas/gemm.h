@@ -75,7 +75,20 @@ gemm(Index m, Index n, Index k,
 {
     typedef typename std::common_type<Alpha, TA, TB>::type  T;
 
-    const Index MC = BlockSize<T>::MC;
+    int nof_threads = 1;
+    #if defined(GLOBAL_THREAD_POOL)
+       nof_threads = ::GLOBAL_THREAD_POOL.get_num_threads();
+    #elif defined(_OPENMP)
+       #pragma omp parallel
+       {
+          if (omp_get_thread_num() == 0) {
+             nof_threads = omp_get_num_threads();
+          }
+       }
+    #endif
+
+
+    const Index MC = BlockSize<T>::MC*nof_threads;
     const Index NC = BlockSize<T>::NC;
     const Index KC = BlockSize<T>::KC;
 
