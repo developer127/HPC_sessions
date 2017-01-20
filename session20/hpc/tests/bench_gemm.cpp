@@ -2,7 +2,7 @@
 #include <cstddef>
 #include <limits>
 #include <random>
-#include <fmt/printf.hpp>
+#include <printf.hpp>
 #include <hpc/aux/primitive_type.h>
 #include <hpc/aux/walltime.h>
 #include <hpc/mt/thread_pool.h>
