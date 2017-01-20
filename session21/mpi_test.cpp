@@ -1,5 +1,5 @@
 #include <mpi.h>
-#include <fmt/printf.hpp>
+#include <printf.hpp>
 
 int main(int argc, char** argv) {
    MPI_Init(&argc, &argv);

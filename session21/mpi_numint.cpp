@@ -1,5 +1,5 @@
 #include <mpi.h>
-#include <fmt/printf.hpp>
+#include <printf.hpp>
 
 double f(double x) {
     return 4.0/(1+x*x);
