@@ -1,3 +1,7 @@
+Questions on session 22:
+Exercise 1:     If a Matrix is consequtevly in memory, it should be possible
+to construct the MPI datatype with one single invocation of MPI_Type_vector.
+
 Questions to session 19:
 In the LU Factorisation we tested ajj ==0 for singularity of the matrix.
 Does this make sense or would it be better to test for < eps?
