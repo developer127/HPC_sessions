@@ -1,0 +1,53 @@
+Question 1:
+
+/* Datatype for the rowvectors:
+   need to fix the extent to be 1*/
+
+MPI_Datatype rowtype;
+    MPI_Type_vector(
+    /* count = */           3,
+    /* blocklength = */     1,
+    /* stride = */          2,
+    /* element type = */    MPI_FLOAT,
+    /* newly created type = */ &rowtype);
+
+/* The extent is 5 now and gets fixed to 1 next */
+
+MPI_Datatype resize_rowtype;
+MPI_Type_create_resize(rowtype,
+                       0,
+                       1*sizeof(float),
+                       resize_rowtype);
+
+MPI_Type_commit(&resize_rowtype);
+
+
+/* Datatype for the matrix:
+   consisting of two vectors of type resize_rowtype */
+
+MPI_Datatype matrix2x3;
+
+MPI_Type_contiguous(2, resize_rowtype, &matrix2x3);
+
+MPI_Type_commit(&matrix2x3);
+
+
+The extent(T) = 1
+
+
+Question 2:
+
+yes this should be possible because we don't need to reset the extent.
+The following command is to create the datatype:
+
+MPI_Datatype matrixB;
+    MPI_Type_vector(
+    /* count = */           3,
+    /* blocklength = */     3,
+    /* stride = */          4,
+    /* element type = */    MPI_DOUBLE,
+    /* newly created type = */ &matrixB);
+
+MPI_Type_commit(&matrixB);
+
+

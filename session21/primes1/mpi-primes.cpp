@@ -1,7 +1,7 @@
 #include <mpi.h>
 #include <iostream>
 #include <cassert>
-#include <printf.hpp>
+#include <fmt/printf.hpp>
 #include "primes.hpp"
 #include <hpc/gmp/integer.h>
 #include <hpc/aux/slices.h>
@@ -10,31 +10,37 @@ using namespace hpc::aux;
 using namespace hpc::gmp;
 
 void send_integer(const Integer& value, int dest, int tag) {
-   assert(dest >= 0);
-   ExportedInteger exp_value(value);
-   int len = (int) exp_value.length();
-   int header[2] = {exp_value.sgn(), len};
-   MPI_Send(header, 2, MPI_INT, dest, tag, MPI_COMM_WORLD);
-   MPI_Send(exp_value.words, len, MPI_INT, dest, tag, MPI_COMM_WORLD);
+    assert(dest >= 0);
+    ExportedInteger exp_value(value);
+    int len = (int) exp_value.length();
+    int header[2] = {exp_value.sgn(), len};
+    MPI_Send(header, 2, MPI_INT, dest, tag, MPI_COMM_WORLD);
+    MPI_Send(exp_value.words, len, MPI_INT, dest, tag, MPI_COMM_WORLD);
 }
 
 void send_finish(int dest) {
-   MPI_Send(nullptr, 0, MPI_INT, dest, 1, MPI_COMM_WORLD);
+    MPI_Send(nullptr, 0, MPI_INT, dest, 1, MPI_COMM_WORLD);
 }
 
-bool receive_integer(Integer& value, int& source, int& tag) {
-   int lenval;
-   MPI_Status status;
-   int header[2];
-   MPI_Recv(header, 2, MPI_INT, source, tag, MPI_COMM_WORLD, &status);
-   tag = status.MPI_TAG;
-   source = status.MPI_SOURCE;
-   if (tag) return false;
-   int sgn = header[0]; unsigned int len = header[1];
-   ExportedInteger exp_value(sgn, len);
-   MPI_Recv(exp_value.words, len, MPI_INT, source, tag, MPI_COMM_WORLD, &status);
-   value = exp_value.get();
-   return true;
+bool receive_integer(Integer& value, int& source, int& tag)
+{
+    //int lenval;
+    MPI_Status status;
+    /* The recived header contains
+       1. sign
+       2. number of words the Integer consists of. */
+    int header[2];
+    MPI_Recv(header, 2, MPI_INT, source, tag, MPI_COMM_WORLD, &status);
+    tag = status.MPI_TAG;
+    source = status.MPI_SOURCE;
+    if (tag) return false;
+    int sgn = header[0];
+    unsigned int len = header[1];
+    ExportedInteger exp_value(sgn, len);
+    MPI_Recv(exp_value.words, len, MPI_INT, source,
+            tag, MPI_COMM_WORLD, &status);
+    value = exp_value.get();
+    return true;
 }
 
 char* progname;
@@ -76,28 +82,29 @@ void primes_master(int nofworkers, int argc, char** argv) {
    }
 }
 
-void primes_worker(int nofworkers, int rank) {
-   int k;
-   MPI_Bcast(&k, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
-   unsigned int* offsets = new unsigned int[k-1];
-   MPI_Bcast(offsets, k-1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
+void primes_worker(int nofworkers, int rank)
+{
+    int k;
+    MPI_Bcast(&k, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
+    unsigned int* offsets = new unsigned int[k-1];
+    MPI_Bcast(offsets, k-1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
 
-   Integer global_start, global_end;
-   int source = 0, tag = 0;
-   receive_integer(global_start, source, tag);
-   receive_integer(global_end, source, tag);
+    Integer global_start, global_end;
+    int source = 0, tag = 0;
+    receive_integer(global_start, source, tag);
+    receive_integer(global_end, source, tag);
 
-   Slices<Integer> slices(nofworkers, global_end - global_start);
-   Integer start = slices.offset(rank);
-   Integer end = start + slices.size(rank);
+    Slices<Integer> slices(nofworkers, global_end - global_start);
+    Integer start = slices.offset(rank);
+    Integer end = start + slices.size(rank);
 
-   Integer prime;
-   while (search_prime_constellation(start, end, k, offsets, prime)) {
-      send_integer(prime, 0, 0);
-      start = prime;
-      start += 1;
-   }
-   send_finish(0);
+    Integer prime;
+    while (search_prime_constellation(start, end, k, offsets, prime)) {
+        send_integer(prime, 0, 0);
+        start = prime;
+        start += 1;
+    }
+    send_finish(0);
 }
 
 int main(int argc, char** argv) {
@@ -105,7 +112,8 @@ int main(int argc, char** argv) {
 
    int rank; MPI_Comm_rank(MPI_COMM_WORLD, &rank);
    int nofworkers; MPI_Comm_size(MPI_COMM_WORLD, &nofworkers);
-   --nofworkers; assert(nofworkers > 0);
+   --nofworkers;
+   assert(nofworkers > 0);
 
    if (rank == 0) {
       primes_master(nofworkers, argc, argv);

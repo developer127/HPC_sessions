@@ -27,8 +27,10 @@ get_row_type(const Matrix& A)
     /* element type = */ get_type(fundamental_type<ElementType>().get()),
     /* newly created type = */ &rowtype);
 
-    /* test for rowmajor */
-    if (A.incRow == A.numCols * A.incCol) {
+    /* test for rowmajor
+       assuming that the matrix (view) is consecutively in memory
+       that means no column gaps*/
+    if (A.incRow == A.numCols) {
         MPI_Type_commit(&rowtype);
         return rowtype;
     } else {

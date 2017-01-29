@@ -34,8 +34,10 @@ struct ExportedInteger {
    Integer get() const {
       Integer val;
       if (sign == 0) return val;
-      mpz_import(val.get_mpz_t(), len, 1, sizeof(Word), 1, 0,
-	 (const void*) words);
+      mpz_import(val.get_mpz_t(),
+                 len, 1,            // 1 stands for most significant word first
+                 sizeof(Word), 1,   // 1 most significant bit first in each word
+                 0, (const void*) words);
       if (sign > 0) {
 	 return val;
       } else {
