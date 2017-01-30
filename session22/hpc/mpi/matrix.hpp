@@ -21,10 +21,10 @@ get_row_type(const Matrix& A)
     using ElementType = typename Matrix::ElementType;
     MPI_Datatype rowtype;
     MPI_Type_vector(
-    /* count = */ A.numRows,
+    /* count = */ A.numCols,
     /* blocklength = */ 1,
     /* stride = */ A.incCol,
-    /* element type = */ get_type(fundamental_type<ElementType>().get()),
+    /* element type = */ get_type(A(0,0)),
     /* newly created type = */ &rowtype);
 
     /* test for rowmajor
@@ -35,9 +35,9 @@ get_row_type(const Matrix& A)
         return rowtype;
     } else {
         MPI_Datatype resize_rowtype;
-        MPI_Type_create_resize(rowtype, 0,
+        MPI_Type_create_resized(rowtype, 0,
                                A.incRow*sizeof(ElementType),
-                               resize_rowtype);
+                               &resize_rowtype);
         MPI_Type_commit(&resize_rowtype);
         return resize_rowtype;
     }
@@ -49,7 +49,6 @@ typename std::enable_if<hpc::matvec::IsGeMatrix<Matrix>::value,
          MPI_Datatype>::type
 get_type(const Matrix& A)
 {
-    using ElementType = typename Matrix::ElementType;
     MPI_Datatype datatype;
     if (A.incCol == 1) {
         MPI_Type_vector(
@@ -68,73 +67,86 @@ get_type(const Matrix& A)
 }
 
 template<typename MA, typename MB>
-typename std::enable_if<
-   hpc::matvec::IsGeMatrix<MA>::value && hpc::matvec::IsGeMatrix<MB>::value &&
-      std::is_same<typename MA::ElementType, typename MB::ElementType>::value,
-   int>::type
-scatter_by_row(const MA& A, MB& B, int root, MPI_Comm comm) {
-   assert(A.numCols == B.numCols);
+typename std::enable_if<hpc::matvec::IsGeMatrix<MA>::value &&
+                        hpc::matvec::IsGeMatrix<MB>::value &&
+                        std::is_same<typename MA::ElementType,
+                        typename MB::ElementType>::value, int>::type
+scatter_by_row(const MA& A, MB& B, int root, MPI_Comm comm)
+{
+    assert(A.numCols == B.numCols);
 
-   int nof_processes; MPI_Comm_size(comm, &nof_processes);
-   int rank; MPI_Comm_rank(comm, &rank);
+    int nof_processes;
+    MPI_Comm_size(comm, &nof_processes);
 
-   hpc::aux::Slices<int> slices(nof_processes, A.numRows);
-   std::vector<int> counts(nof_processes);
-   std::vector<int> offsets(nof_processes);
+    int rank;
+    MPI_Comm_rank(comm, &rank);
 
-   MPI_Datatype rowtype_A = get_row_type(A);
-   for (int i = 0; i < nof_processes; ++i) {
-      if (i < A.numRows) {
-	 counts[i] = slices.size(i);
-	 offsets[i] = slices.offset(i);
-      } else {
-	 counts[i] = 0; offsets[i] = 0;
-      }
-   }
-   int recvcount = counts[rank];
-   assert(B.numRows == recvcount);
+    hpc::aux::Slices<int> slices(nof_processes, A.numRows);
+    std::vector<int> counts(nof_processes);
+    std::vector<int> offsets(nof_processes);
 
-   MPI_Datatype rowtype_B = get_row_type(B);
+    MPI_Datatype rowtype_A = get_row_type(A);
+    for (int i = 0; i < nof_processes; ++i) {
+        if (i < A.numRows) {
+            counts[i] = slices.size(i);
+            offsets[i] = slices.offset(i);
+        } else {
+            counts[i] = 0; offsets[i] = 0;
+        }
+    }
 
-   /* OpenMPI implementation of Debian wheezy expects void* instead
-      of const void*; hence we need to remove const */
-   return MPI_Scatterv((void*) &A(0, 0), &counts[0], &offsets[0], rowtype_A,
-      &B(0, 0), recvcount, rowtype_B, root, comm);
+    int recvcount = counts[rank];
+    assert(B.numRows == recvcount);
+
+    MPI_Datatype rowtype_B = get_row_type(B);
+
+    /* OpenMPI implementation of Debian wheezy expects void* instead
+    of const void*; hence we need to remove const */
+    return MPI_Scatterv((void*) &A(0, 0), &counts[0], &offsets[0],
+                        rowtype_A,
+                        &B(0, 0), recvcount, rowtype_B,
+                        root, comm);
 }
 
 template<typename MA, typename MB>
-typename std::enable_if<
-   hpc::matvec::IsGeMatrix<MA>::value && hpc::matvec::IsGeMatrix<MB>::value &&
-      std::is_same<typename MA::ElementType, typename MB::ElementType>::value,
-   int>::type
-gather_by_row(const MA& A, MB& B, int root, MPI_Comm comm) {
-   assert(A.numCols == B.numCols);
+typename std::enable_if<hpc::matvec::IsGeMatrix<MA>::value &&
+                        hpc::matvec::IsGeMatrix<MB>::value &&
+                        std::is_same<typename MA::ElementType,
+                        typename MB::ElementType>::value, int>::type
+gather_by_row(const MA& A, MB& B, int root, MPI_Comm comm)
+{
+    assert(A.numCols == B.numCols);
 
-   int nof_processes; MPI_Comm_size(comm, &nof_processes);
-   int rank; MPI_Comm_rank(comm, &rank);
+    int nof_processes;
+    MPI_Comm_size(comm, &nof_processes);
 
-   hpc::aux::Slices<int> slices(nof_processes, B.numRows);
-   std::vector<int> counts(nof_processes);
-   std::vector<int> offsets(nof_processes);
+    int rank;
+    MPI_Comm_rank(comm, &rank);
 
-   for (int i = 0; i < nof_processes; ++i) {
-      if (i < B.numRows) {
-	 counts[i] = slices.size(i);
-	 offsets[i] = slices.offset(i);
-      } else {
-	 counts[i] = 0; offsets[i] = 0;
-      }
-   }
-   int sendcount = counts[rank];
-   assert(A.numRows == sendcount);
+    hpc::aux::Slices<int> slices(nof_processes, B.numRows);
+    std::vector<int> counts(nof_processes);
+    std::vector<int> offsets(nof_processes);
 
-   MPI_Datatype rowtype_A = get_row_type(A);
-   MPI_Datatype rowtype_B = get_row_type(B);
+    for (int i = 0; i < nof_processes; ++i) {
+        if (i < B.numRows) {
+            counts[i] = slices.size(i);
+            offsets[i] = slices.offset(i);
+        } else {
+            counts[i] = 0; offsets[i] = 0;
+        }
+    }
 
-   /* OpenMPI implementation of Debian wheezy expects void* instead
-      of const void*; hence we need to remove const */
-   return MPI_Gatherv((void*) &A(0, 0), sendcount, rowtype_A,
-      &B(0, 0), &counts[0], &offsets[0], rowtype_B, root, comm);
+    int sendcount = counts[rank];
+    assert(A.numRows == sendcount);
+
+    MPI_Datatype rowtype_A = get_row_type(A);
+    MPI_Datatype rowtype_B = get_row_type(B);
+
+    /* OpenMPI implementation of Debian wheezy expects void* instead
+    of const void*; hence we need to remove const */
+    return MPI_Gatherv((void*) &A(0, 0), sendcount, rowtype_A,
+                       &B(0, 0), &counts[0], &offsets[0], rowtype_B,
+                       root, comm);
 }
 
 } } // namespaces mpi, hpc

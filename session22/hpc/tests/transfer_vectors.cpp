@@ -5,8 +5,7 @@
 #include <hpc/matvec/apply.h>
 #include <hpc/matvec/densevector.h>
 #include <hpc/matvec/gematrix.h>
-#include <hpc/mpi/sendvec.hpp>
-#include <hpc/mpi/receivevec.hpp>
+#include <hpc/mpi/vector.hpp>
 
 int main(int argc, char** argv) {
    MPI_Init(&argc, &argv);
