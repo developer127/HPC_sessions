@@ -87,7 +87,7 @@ scatter_by_row(const MA& A, MB& B, int root, MPI_Comm comm)
 
     MPI_Datatype rowtype_A = get_row_type(A);
     for (int i = 0; i < nof_processes; ++i) {
-        if (i < A.numRows) {
+        if (std::size_t(i) < A.numRows) {
             counts[i] = slices.size(i);
             offsets[i] = slices.offset(i);
         } else {
@@ -96,13 +96,14 @@ scatter_by_row(const MA& A, MB& B, int root, MPI_Comm comm)
     }
 
     int recvcount = counts[rank];
-    assert(B.numRows == recvcount);
+    assert(B.numRows == std::size_t(recvcount));
 
     MPI_Datatype rowtype_B = get_row_type(B);
 
     /* OpenMPI implementation of Debian wheezy expects void* instead
-    of const void*; hence we need to remove const */
-    return MPI_Scatterv((void*) &A(0, 0), &counts[0], &offsets[0],
+    of const void*; hence we need to remove const
+    return MPI_Scatterv((void*) &A(0, 0), &counts[0], &offsets[0], */
+    return MPI_Scatterv(&A(0, 0), &counts[0], &offsets[0],
                         rowtype_A,
                         &B(0, 0), recvcount, rowtype_B,
                         root, comm);
@@ -128,7 +129,7 @@ gather_by_row(const MA& A, MB& B, int root, MPI_Comm comm)
     std::vector<int> offsets(nof_processes);
 
     for (int i = 0; i < nof_processes; ++i) {
-        if (i < B.numRows) {
+        if (std::size_t(i) < B.numRows) {
             counts[i] = slices.size(i);
             offsets[i] = slices.offset(i);
         } else {
@@ -137,14 +138,15 @@ gather_by_row(const MA& A, MB& B, int root, MPI_Comm comm)
     }
 
     int sendcount = counts[rank];
-    assert(A.numRows == sendcount);
+    assert(A.numRows == std::size_t(sendcount));
 
     MPI_Datatype rowtype_A = get_row_type(A);
     MPI_Datatype rowtype_B = get_row_type(B);
 
     /* OpenMPI implementation of Debian wheezy expects void* instead
-    of const void*; hence we need to remove const */
-    return MPI_Gatherv((void*) &A(0, 0), sendcount, rowtype_A,
+    of const void*; hence we need to remove const
+    return MPI_Gatherv((void*) &A(0, 0), sendcount, rowtype_A, */
+    return MPI_Gatherv(&A(0, 0), sendcount, rowtype_A,
                        &B(0, 0), &counts[0], &offsets[0], rowtype_B,
                        root, comm);
 }

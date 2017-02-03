@@ -6,32 +6,37 @@
 namespace hpc { namespace aux {
 
 template<typename T>
-struct Slices {
-   Slices(T nof_threads, T problem_size) :
-	 nof_threads((assert(nof_threads > 0), nof_threads)),
-	 problem_size(problem_size),
-	 remainder(problem_size % nof_threads),
-	 slice_size(problem_size / nof_threads) {
-   }
-   T offset(T index) {
-      assert(index < nof_threads);
-      if (index < remainder) {
-	 return index * (slice_size + 1);
-      } else {
-	 return remainder * (slice_size + 1) +
-	        (index - remainder) * slice_size;
-      }
-   }
-   T size(T index) {
-      assert(index < nof_threads);
-      if (index < remainder) {
-	 return slice_size + 1;
-      } else {
-	 return slice_size;
-      }
-   }
-   T nof_threads; T problem_size;
-   T remainder; T slice_size;
+struct Slices
+{
+    Slices(T nof_threads, T problem_size) :
+        nof_threads((assert(nof_threads > 0), nof_threads)),
+        problem_size(problem_size),
+        remainder(problem_size % nof_threads),
+        slice_size(problem_size / nof_threads) {
+        }
+
+    T offset(T index)
+    {
+        assert(index < nof_threads);
+        if (index < remainder) {
+            return index * (slice_size + 1);
+        } else {
+            return remainder * (slice_size + 1) +
+                (index - remainder) * slice_size;
+        }
+    }
+
+    T size(T index)
+    {
+        assert(index < nof_threads);
+        if (index < remainder) {
+            return slice_size + 1;
+        } else {
+            return slice_size;
+        }
+    }
+    T nof_threads; T problem_size;
+    T remainder; T slice_size;
 };
 
 template<typename T1, typename T2, typename Body>

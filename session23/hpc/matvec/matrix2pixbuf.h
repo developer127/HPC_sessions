@@ -38,12 +38,12 @@ create_pixbuf(MA& A, Colorizer colorizer, unsigned int scale = 1) {
    guchar* pixels = gdk_pixbuf_get_pixels(pixbuf);
    if (!pixels) return nullptr;
 
-   for (int i = 0; i < A.numCols; ++i) {
-      for (int j = 0; j < A.numRows; ++j) {
+   for (std::size_t i = 0; i < A.numCols; ++i) {
+      for (std::size_t j = 0; j < A.numRows; ++j) {
 	 auto color = colorizer(A(i, j));
 	 auto rgbcolor = color.get_rgb();
-	 for (int scale_i = 0; scale_i < scale; ++scale_i) {
-	    for (int scale_j = 0; scale_j < scale; ++scale_j) {
+	 for (std::size_t scale_i = 0; scale_i < scale; ++scale_i) {
+	    for (std::size_t scale_j = 0; scale_j < scale; ++scale_j) {
 	       int i_ = height - 1 - (j * scale + scale_j);
 	       int j_ = i * scale + scale_i;
 	       assert(i_ >= 0 && i_ < height);
