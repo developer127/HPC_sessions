@@ -1,10 +1,10 @@
-#ifndef HPC_CUDA_DOT_HPP
-#define HPC_CUDA_DOT_HPP 1
+#ifndef HPC_CUDA_ASUM_HPP
+#define HPC_CUDA_ASUM_HPP 1
 
 #include<cassert>
 #include<hpc/cuda/check.h>
 
-#define N 9192
+#define N 8192
 
 #define THREADS_PER_BLOCK 256
 #define NUM_BLOCKS ((N + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK)
@@ -12,8 +12,7 @@
 namespace hpc { namespace cuda {
 
 template<typename Index, typename TX, typename TY, typename T>
-__global__ void dot(Index n, const TX* x, Index incX,
-                    const TY* y, Index incY, T* sums)
+__global__ void asum(Index n, const TX* x, Index incX, T* sums)
 {
     assert(n>=0);
     std::size_t tid = threadIdx.x + blockIdx.x * blockDim.x;
@@ -48,4 +47,4 @@ __global__ void dot(Index n, const TX* x, Index incX,
 }
 
 } }     // namespace hpc::cuda
-#endif  //HPC_CUDA_DOT_HPP
+#endif  //HPC_CUDA_ASUM_HPP
