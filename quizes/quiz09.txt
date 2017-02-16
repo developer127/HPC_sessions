@@ -1,0 +1,63 @@
+Question 1:
+Organizing a communicator comm for a two-dimensional MPI-grid:
+
+
+int nof_processes;
+MPI_Comm_size(MPI_COMM_WORLD, &nof_processes);
+
+int dims[2] = {0, 0};
+int periods[2] = {false, false};
+
+MPI_Dims_create(nof_processes, 2, dims);
+
+//The actual communicator:
+MPI_Comm comm;
+MPI_Cart_create(MPI_COMM_WORLD,
+   2,        // number of dimensions
+   dims,     // actual dimensions
+   periods,  // both dimensions are non-periodical
+   true,     // reorder is permitted
+   &grid     // newly created communication domain
+);
+int rRowank;
+MPI_Comm_rank(MPI_COMM_WORLD, &rank); // update rank (could have changed)
+
+
+
+
+Question 2:
+There exist two options how to achive this:
+a) by splitting the communicator by a distinguishing color. That is the row
+   and col number respectively.
+
+//First we need to know at witch position we are in the grid:
+
+int coords[2];
+MPI_Cart_coords(comm, rank, 2, &coords);
+
+//now we can create the new communicators
+MPI_Comm commRow;
+MPI_Comm commCol;
+
+// We want to split our comm comunicator by the row and col number,
+// but first we need to determine the corresponding rank.
+
+int cartrank;
+int color = coord[0];       //we want to split all with the same row
+
+MPI_Cart_rank(comm, coords, &cartrank);
+MPI_Comm_split(comm, color, cartrank, &commRow);
+
+color = coord[1];           //we want to split all with the same col
+
+MPI_Comm_split(comm, color, cartrank, &commCol);
+
+
+
+b) by dropping one dimension of the grid
+
+int remainRow[] = {true, false};            //second dimension is droped
+MPI_Cart_sub(comm, remainRow, &commRow);
+
+int remainCol[] = {false, true};            //first dimension is droped
+MPI_Cart_sub(comm, remainCol, &commCol);
