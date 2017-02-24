@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <stddef.h>
 
 void init_vector(double *vec, size_t len, ptrdiff_t incr)
 {

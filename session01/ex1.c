@@ -19,7 +19,7 @@ void print_vector(double* vec, size_t len, ptrdiff_t inc)
 
 /* Main program */
 
-double v[8];
+//double v[8];
 
 int main()
 {
