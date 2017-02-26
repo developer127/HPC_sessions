@@ -1,1 +1,0 @@
-printMatrix.o: printMatrix.c

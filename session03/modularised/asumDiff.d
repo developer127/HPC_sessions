@@ -1,1 +1,0 @@
-asumDiff.o: asumDiff.c

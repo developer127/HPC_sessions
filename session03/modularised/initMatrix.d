@@ -1,1 +1,0 @@
-initMatrix.o: initMatrix.c

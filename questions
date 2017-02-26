@@ -81,3 +81,12 @@ Question page 01:
 3. becaues n > 1000 only one number is taken from each cashline loaded
     in the second case max 64/sizeof(double) = 8
     can be fetched from one cashline.
+
+Session 03:
+Question page02:
+1. void gemm(size_t m, size_t n, size_t k,
+             double alpha,
+             const double* A, ptrdiff_t incRowA, ptrdiff_t incColA,
+             const double* B, ptrdiff_t incRowB, ptrdiff_t incColB,
+             doubel beta,
+             double* C, ptrdiff_t incRowC, ptrdiff_t incColc)
