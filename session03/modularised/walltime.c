@@ -15,4 +15,5 @@ double walltime() {
     return (double) times(&timebuf) / ticks_per_second;
 }
 
+
 #endif        //WALLTIME_H
