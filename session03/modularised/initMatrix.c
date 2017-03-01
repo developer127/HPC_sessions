@@ -7,7 +7,7 @@ initMatrix(size_t m, size_t n,
 {
    for (size_t j = 0; j < n; ++j) {
       for (size_t i = 0; i < m; ++i) {
-         A[i*incRowA+j*incColA] = (double)j*(double)n+(double)i+1;
+         A[i*incRowA+j*incColA] = (double)j*(double)m+(double)i+1;
       }
    }
 }

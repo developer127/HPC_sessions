@@ -2,7 +2,7 @@ CC=gcc
 OUTPUT_OPTION=-MMD -MP -o $@
 CFLAGS = -Wall -Wextra -std=c99 -g -O3
 
-TARGET := benchinitmatrix
+TARGET := bench_blas
 SRC := $(wildcard *.c)
 OBJ := $(SRC:.c=.o)
 DEP := $(SRC:.c=.d)
@@ -16,7 +16,7 @@ $(TARGET): $(OBJ)
 .PHONY: clean bench plot cleanTarget
 
 bench:
-	./bin/$(TARGET) > benchmarks/initmatrix.data
+	./bin/$(TARGET) > benchmarks/$(TARGET).data
 plot:
 	gnuplot benchmarks/initmatrix_time.gnuplot
 	gnuplot benchmarks/initmatrix_speedup.gnuplot

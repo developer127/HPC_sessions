@@ -43,8 +43,8 @@ void gemm_variant2(size_t m, size_t n, size_t k,
                    double *C, ptrdiff_t incRowC, ptrdiff_t incColC)
 {
     size_t i,j,l;
-    for(i=0; i<n; ++i) {
-        for(j=0; j<m; ++j) {
+    for(j=0; j<n; ++j) {
+        for(i=0; i<m; ++i) {
             double temp = 0;
             for(l=0; l<k; ++l) {
                 temp += A[i*incRowA+l*incColA] * B[l*incRowB + j*incColB];
@@ -69,13 +69,13 @@ void gemm_variant3(size_t m, size_t n, size_t k,
 {
     size_t i,j,l;
     for(i=0; i<m; ++i) {
-        for(j=0; j<k; ++j) {
-            double temp_A = A[i*incRowA + j*incColA];
-            for(l=0; l<n; ++l) {
-                double beta_ = (k==0) ? beta : 1.0;
-                C[i*incRowC+l*incColC] *= beta_;
-                C[i*incRowC+l*incColC] += alpha * (temp_A
-                                                    * B[j*incRowB + l*incColB]);
+        for(l=0; l<k; ++l) {
+            double beta_ = (l==0) ? beta : 1.0;
+            double temp_A = A[i*incRowA+l*incColA];
+            for(j=0; j<n; ++j) {
+                C[i*incRowC+j*incColC] *= beta_;
+                C[i*incRowC+j*incColC] += alpha * temp_A
+                                        * B[l*incRowB+j*incColB];
             }
         }
     }
@@ -94,14 +94,14 @@ void gemm_variant4(size_t m, size_t n, size_t k,
                    double *C, ptrdiff_t incRowC, ptrdiff_t incColC)
 {
     size_t i,j,l;
-    for(i=0; i<n; ++i) {
-        for(j=0; j<k; ++j) {
-            double temp_B = B[j*incRowB + i*incColB];
-            for(l=0; l<m; ++l) {
-                double beta_ = (k==0) ? beta : 1.0;
-                C[i*incRowC+l*incColC] *= beta_;
-                C[i*incRowC+l*incColC] += alpha * ( A[l*incRowA+j*incColA]
-                                                    * temp_B);
+    for(j=0; j<n; ++j) {
+        for(l=0; l<k; ++l) {
+            double beta_ = (l==0) ? beta : 1.0;
+            double temp_B = B[l*incRowB+j*incColB];
+            for(i=0; i<m; ++i) {
+                C[i*incRowC+j*incColC] *= beta_;
+                C[i*incRowC+j*incColC] += alpha * A[i*incRowA+l*incColA]
+                                        * temp_B;
             }
         }
     }
