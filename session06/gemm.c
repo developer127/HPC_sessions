@@ -70,15 +70,15 @@
 #endif
 
 #ifndef M_C
-#define M_C     256
+#define M_C     100
 #endif
 
 #ifndef K_C
-#define K_C     256
+#define K_C     100
 #endif
 
 #ifndef N_C
-#define N_C     1024
+#define N_C     100
 #endif
 
 
@@ -481,49 +481,38 @@ dgemm_var5(size_t m, size_t n, size_t k, double alpha,
     size_t nb = n/N_C;
     size_t kb = k/K_C;
 
-    for(size_t i=0; i<mb; ++i) {
-        for(size_t j=0; j<nb; ++j) {
-            // Buffer C_ col_major
-            initZero(M_C,N_C,
-                     C_,1,M_C);
-            for(size_t l=0; l<kb; ++l) {
-                // Buffer A_ row_major
-                dgecopy(M_C,K_C,
-                        &A[i*incRowA*M_C+l*incColA*K_C], incRowA, incColA,
-                        A_,K_C,1);
-                // Buffer B_ col_major
-                dgecopy(K_C,N_C,
-                        &B[l*incRowB*K_C+j*incColB*N_C], incRowB, incColB,
-                        B_,1,K_C);
+    // The remainder
+    size_t mr = m % M_C;
+    size_t nr = n % N_C;
+    size_t kr = k % K_C;
 
-                gemm_block(A_,K_C,1,B_,1,K_C,C_,1,M_C);
+    for(size_t i=0; i<=mb; ++i) {
+        size_t M = (i<mb || mr==0)? M_C : mr;
+        for(size_t j=0; j<=nb; ++j) {
+            size_t N = (j<nb || nr==0)? N_C : nr;
+            // Buffer C_ col_major
+            initZero(M, N,
+                     C_, 1, M_C);
+            for(size_t l=0; l<=kb; ++l) {
+                size_t K = (l<kb || kr==0)? K_C : kr;
+                // Buffer A_ row_major
+                dgecopy(M, K,
+                        &A[i*incRowA*M_C+l*incColA*K_C], incRowA, incColA,
+                        A_, K_C, 1);
+                // Buffer B_ col_major
+                dgecopy(K, N,
+                        &B[l*incRowB*K_C+j*incColB*N_C], incRowB, incColB,
+                        B_, 1, K_C);
+                dgemm_var4(M, N, K, alpha,
+                           A_, K_C, 1,
+                           B_, 1, K_C,
+                           1,
+                           C_, 1, M_C);
             }
-            dgeaxpy(M_C,N_C, alpha,
-                    C_,1,M_C,
-                    &C[i*incRowC*M_C+j*incColC*N_C], incRowC,incColC);
+            dgeaxpy(M, N, 1,
+                    C_, 1, M_C,
+                    &C[i*incRowC*M_C+j*incColC*N_C], incRowC, incColC);
         }
-    }
-    // The cases when the blocks doesn't fit:
-    if(m%M_C != 0) {
-        dgemm_var4(m%M_C,n,kb*K_C,alpha,
-                  &A[mb*incRowA*M_C], incRowA, incColA,
-                  B,incRowB,incColB,
-                  1,
-                  &C[mb*incRowC*M_C], incRowC, incColC);
-    }
-    if(n%N_C != 0) {
-        dgemm_var4(mb*M_C,n,k%K_C,alpha,
-                  &A[kb*incColA*K_C], incRowA, incColA,
-                  &B[kb*incRowB*K_C],incRowB,incColB,
-                  1,
-                  C, incRowC, incColC);
-    }
-    if(m%M_C != 0 || n%N_C != 0){
-        dgemm_var4(m%M_C,n,k%K_C,alpha,
-                  &A[mb*incRowA*M_C + kb*incColA*K_C], incRowA, incColA,
-                  &B[kb*incRowB*K_C],incRowB,incColB,
-                  1,
-                  &C[mb*incRowC*M_C], incRowC, incColC);
     }
 }
 
