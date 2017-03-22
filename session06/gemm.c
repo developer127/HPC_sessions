@@ -14,15 +14,15 @@
 #endif
 
 #ifndef MAXDIM_M
-#define MAXDIM_M    4000
+#define MAXDIM_M    8000
 #endif
 
 #ifndef MAXDIM_N
-#define MAXDIM_N    4000
+#define MAXDIM_N    8000
 #endif
 
 #ifndef MAXDIM_K
-#define MAXDIM_K    4000
+#define MAXDIM_K    8000
 #endif
 
 #ifndef MIN_M
