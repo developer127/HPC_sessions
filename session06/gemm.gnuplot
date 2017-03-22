@@ -7,4 +7,4 @@ set title "General matrix matrix product" font ",18"
 set key outside
 set pointsize 0.5
 plot "gemm.data" using 2:4 with linespoints lt 2 lw 3 title "traverse_best", \
-     "gemm.data" using 2:9 with linespoints lt 3 lw 3 title "blocked"
+     "gemm.data" using 2:6 with linespoints lt 3 lw 3 title "blocked"
