@@ -14,15 +14,15 @@
 #endif
 
 #ifndef MAXDIM_M
-#define MAXDIM_M    4000
+#define MAXDIM_M    8000
 #endif
 
 #ifndef MAXDIM_N
-#define MAXDIM_N    4000
+#define MAXDIM_N    8000
 #endif
 
 #ifndef MAXDIM_K
-#define MAXDIM_K    4000
+#define MAXDIM_K    8000
 #endif
 
 #ifndef MIN_M
@@ -88,8 +88,6 @@ double B[MAXDIM_K*MAXDIM_N];
 
 double C1[MAXDIM_M*MAXDIM_N];
 double C2[MAXDIM_M*MAXDIM_N];
-double C3[MAXDIM_M*MAXDIM_N];
-double C4[MAXDIM_M*MAXDIM_N];
 
 //Buffer Matrix
 double A_[M_C*K_C];
@@ -546,66 +544,15 @@ dgemm_var5(size_t m, size_t n, size_t k, double alpha,
 
 int
 main()
-{/*
-    double A[4*4];
-    double B[4*4];
-    double C_1[4*4];
-    double C_2[4*4];
-
-    initRMatrix(4, 4, A, 1, 4);
-    initRMatrix(4, 4, B, 1, 4);
-    initRMatrix(4, 4, C_1, 1, 4);
-    dgecopy(4, 4, C_1, 1, 4, C_2, 1, 4);
-
-    printMatrix(4, 4, A, 1, 4);
-    printMatrix(4, 4, B, 1, 4);
-    printMatrix(4, 4, C_1, 1, 4);
-    printMatrix(4, 4, C_2, 1, 4);
-
-    dgemm_var4(4, 4, 4, 2,
-               A, 1, 4,
-               B, 1, 4,
-               1.5,
-               C_1, 1, 4);
-
-    printMatrix(4, 4, C_1, 1, 4);
-
-    //initMatrix(4, 4, C, 1, 4);
-    dgemm_var5(4, 4, 4, 2,
-               A, 1, 4,
-               B, 1, 4,
-               1.5,
-               C_2, 1, 4);
-
-    printMatrix(4, 4, C_2, 1, 4);
-    double dif;
-    dif = asumDiffMatrix(4, 4,
-                          C_1, 1, 4,
-                          C_2, 1, 4);
-    printf("Differenz: %lf\n", dif);
-
-    double res;
-    res = estimateGemmResidual(4, 4, 4, 2,
-                               A, 1, 4,
-                               B, 1, 4,
-                               0,
-                               C_1, 1, 4,
-                               C_2, 1, 4);
-    printf("Residuum: %lf\n", res);
-
-    */
+{
     initRMatrix(MAXDIM_M, MAXDIM_K, A, 1, MAXDIM_M);
     initRMatrix(MAXDIM_K, MAXDIM_N, B, 1, MAXDIM_K);
     initRMatrix(MAXDIM_M, MAXDIM_N, C1, 1, MAXDIM_M);
     dgecopy(MAXDIM_M, MAXDIM_N, C1, 1, MAXDIM_M, C2, 1, MAXDIM_M);
-    dgecopy(MAXDIM_M, MAXDIM_N, C1, 1, MAXDIM_M, C3, 1, MAXDIM_M);
-    dgecopy(MAXDIM_M, MAXDIM_N, C1, 1, MAXDIM_M, C4, 1, MAXDIM_M);
 
     // FIXME: Print a header for the output
     printf("%*c", 19, ' ');
     //printf("%*c", 2, ' ');
-    printf("%16s ", "GEMM Variant 2");
-    printf("%*c", 10, ' ');
     printf("%16s ", "GEMM BEST");
     printf("%*c", 10, ' ');
     printf("%16s ", "GEMM BLOCKED");
@@ -613,7 +560,6 @@ main()
 
     printf("%5s %5s %5s ", "m", "n", "k");
     printf("%7s %8s", "t", "mflops");
-    printf("%7s %8s %10s", "t", "mflops", "res");
     printf("%7s %8s %10s", "t", "mflops", "res");
     printf("\n");
 
@@ -634,35 +580,17 @@ main()
 
         printf("%5zu %5zu %5zu ", m, n, k);
 
-        // Bench GEMM variant 2
-        t = walltime();
-        dgemm_var2(m, n, k, ALPHA,
-                   A, incRowA, incColA,
-                   B, incRowB, incColB,
-                   BETA,
-                   C2, incRowC, incColC);
-        t = walltime() - t;
-        mflops = 2.*m/1000*n/1000*k/t;
-
-        printf("%7.2lf %8.2lf", t, mflops);
-
         // Bench GEMM variant best choice
         t = walltime();
         dgemm_var4(m, n, k, ALPHA,
                    A, incRowA, incColA,
                    B, incRowB, incColB,
                    BETA,
-                   C3, incRowC, incColC);
+                   C1, incRowC, incColC);
         t = walltime() - t;
         mflops = 2.*m/1000*n/1000*k/t;
-        res = estimateGemmResidual(m, n, k, ALPHA,
-                                   A, incRowA, incColA,
-                                   B, incRowB, incColB,
-                                   BETA,
-                                   C2, incRowC, incColC,
-                                   C3, incRowC, incColC);
 
-        printf("%7.2lf %8.2lf %10.2e", t, mflops, res);
+        printf("%7.2lf %8.2lf", t, mflops);
 
         // Bench GEMM variant BLOCKWISE
         t = walltime();
@@ -670,15 +598,15 @@ main()
                    A, incRowA, incColA,
                    B, incRowB, incColB,
                    BETA,
-                   C4, incRowC, incColC);
+                   C2, incRowC, incColC);
         t = walltime() - t;
         mflops = 2.*m/1000*n/1000*k/t;
         res = estimateGemmResidual(m, n, k, ALPHA,
                                    A, incRowA, incColA,
                                    B, incRowB, incColB,
                                    BETA,
-                                   C2, incRowC, incColC,
-                                   C4, incRowC, incColC);
+                                   C1, incRowC, incColC,
+                                   C2, incRowC, incColC);
 
         printf("%7.2lf %8.2lf %10.2e", t, mflops, res);
         printf("\n");
