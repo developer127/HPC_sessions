@@ -1,5 +1,5 @@
 CFLAGS = -Wall -std=c99 -g -O3
-CFLAGS += -DCOLMAJOR=1
+#CFLAGS += -DCOLMAJOR=1
 #CFLAGS += -DM_C=10
 #CFLAGS += -DK_C=10
 #CFLAGS += -DN_C=10

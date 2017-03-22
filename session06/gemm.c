@@ -120,13 +120,20 @@ initMatrix(size_t m, size_t n, double *A, ptrdiff_t incRowA, ptrdiff_t incColA)
     }
 }
 
-// faster if C is col_major
 void
 initZero(size_t m, size_t n, double *C, ptrdiff_t incRowC, ptrdiff_t incColC)
 {
-    for(size_t j = 0; j<n; ++j) {
-        for(size_t i=0; i<m; ++i) {
-            C[i*incRowC+j*incColC] = 0;
+    if(incRowC>incColC){    // row major
+        for (size_t i=0; i<m; ++i) {
+            for (size_t j=0; j<n; ++j) {
+                C[i*incRowC+j*incColC] = 0;
+            }
+        }
+    } else {                // col major
+        for(size_t j = 0; j<n; ++j) {
+            for(size_t i=0; i<m; ++i) {
+                C[i*incRowC+j*incColC] = 0;
+            }
         }
     }
 }
@@ -136,9 +143,18 @@ dgecopy(size_t m, size_t n,
         const double *A, ptrdiff_t incRowA, ptrdiff_t incColA,
         double *B, ptrdiff_t incRowB, ptrdiff_t incColB)
 {
-    for (size_t j=0; j<n; ++j) {
+
+    if(incRowA>incColA && incRowB>incColB) {    // both row major
+        for (size_t j=0; j<n; ++j) {
+            for (size_t i=0; i<m; ++i) {
+                B[i*incRowB+j*incColB] = A[i*incRowA+j*incColA];
+            }
+        }
+    } else {                                    // at least one col major
         for (size_t i=0; i<m; ++i) {
-            B[i*incRowB+j*incColB] = A[i*incRowA+j*incColA];
+            for (size_t j=0; j<n; ++j) {
+                B[i*incRowB+j*incColB] = A[i*incRowA+j*incColA];
+            }
         }
     }
 }
@@ -149,9 +165,17 @@ dgeaxpy(size_t m, size_t n,
         const double *X, ptrdiff_t incRowX, ptrdiff_t incColX,
         double       *Y, ptrdiff_t incRowY, ptrdiff_t incColY)
 {
-    for (size_t i=0; i<m; ++i) {
+    if(incRowX>incColX && incRowY>incColY) {    // both row major
+        for (size_t i=0; i<m; ++i) {
+            for (size_t j=0; j<n; ++j) {
+                Y[i*incRowY+j*incColY] += alpha*X[i*incRowX+j*incColX];
+            }
+        }
+    } else {                                    // at least one col major
         for (size_t j=0; j<n; ++j) {
-            Y[i*incRowY+j*incColY] += alpha*X[i*incRowX+j*incColX];
+            for (size_t i=0; i<m; ++i) {
+                Y[i*incRowY+j*incColY] += alpha*X[i*incRowX+j*incColX];
+            }
         }
     }
 }
@@ -327,14 +351,14 @@ dgemm_var3(size_t m, size_t n, size_t k, double alpha,
     // Compute:  C <- beta*C
     if (beta!=1.0) {
         if (beta!=0) {
-            for (size_t i=0; i<m; ++i) {
-                for (size_t j=0; j<n; ++j) {
+            for (size_t j=0; j<n; ++j) {
+                for (size_t i=0; i<m; ++i) {
                     C[i*incRowC+j*incColC] *=beta;
                }
             }
         } else {
-            for (size_t i=0; i<m; ++i) {
-                for (size_t j=0; j<n; ++j) {
+            for (size_t j=0; j<n; ++j) {
+                for (size_t i=0; i<m; ++i) {
                     C[i*incRowC+j*incColC] = 0;
                 }
             }
@@ -473,7 +497,7 @@ dgemm_var5(size_t m, size_t n, size_t k, double alpha,
         }
     }
     // Compute: C <- C + alpha*A*B
-    if(alpha == 0) {
+    if(alpha == 0.0) {
         return;
     }
     // Anzahl der in die Matritzen passenden Blöcke
@@ -502,29 +526,29 @@ dgemm_var5(size_t m, size_t n, size_t k, double alpha,
                     C_,1,M_C,
                     &C[i*incRowC*M_C+j*incColC*N_C], incRowC,incColC);
         }
-    }
-    // The cases when the blocks doesn't fit:
+    }/*
+    // The cases when the blocks don't fit:
     if(m%M_C != 0) {
-        dgemm_var4(m%M_C,n,kb*K_C,alpha,
+        dgemm_var4(m%M_C,nb*N_C,k,alpha,
                   &A[mb*incRowA*M_C], incRowA, incColA,
                   B,incRowB,incColB,
                   1,
                   &C[mb*incRowC*M_C], incRowC, incColC);
     }
     if(n%N_C != 0) {
-        dgemm_var4(mb*M_C,n,k%K_C,alpha,
+        dgemm_var4(mb*M_C,nb*N_C,k%K_C,alpha,
                   &A[kb*incColA*K_C], incRowA, incColA,
-                  &B[kb*incRowB*K_C],incRowB,incColB,
+                  &B[kb*incRowB*K_C], incRowB, incColB,
                   1,
                   C, incRowC, incColC);
     }
     if(m%M_C != 0 || n%N_C != 0){
-        dgemm_var4(m%M_C,n,k%K_C,alpha,
-                  &A[mb*incRowA*M_C + kb*incColA*K_C], incRowA, incColA,
-                  &B[kb*incRowB*K_C],incRowB,incColB,
+        dgemm_var4(mb*M_C,n%N_C,k,alpha,
+                  A, incRowA, incColA,
+                  &B[nb*incColB*N_C],incRowB,incColB,
                   1,
-                  &C[mb*incRowC*M_C], incRowC, incColC);
-    }
+                  &C[nb*incColC*N_C], incRowC, incColC);
+    }*/
 }
 
 

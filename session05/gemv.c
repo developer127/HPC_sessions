@@ -217,7 +217,8 @@ daxpy_ulm(size_t length, double alpha,
 
 
 /**
-  * axpyf_ulm:      y <- y + alpha * A_Panel*x;
+  * axpyf_ulm:      Matrix_col_panel vector_panel product
+  *                 y <- y + alpha * A_Panel*x;
   * 1. length
   * 2. alpha        scaling factor
   * 3. *A_panel     ptr to the first element of the col_panel
@@ -247,6 +248,7 @@ axpyf_ulm(size_t length, double alpha,
 }
 //-----------------Blas level2--------------------------------------------------
 
+/* MKL version for comparison */
 void
 dgemv(const char *trans,
       const MKL_INT *m, const MKL_INT *n, const double *alpha,

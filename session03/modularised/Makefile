@@ -18,8 +18,8 @@ $(TARGET): $(OBJ)
 bench:
 	./bin/$(TARGET) > benchmarks/$(TARGET).data
 plot:
-	gnuplot benchmarks/initmatrix_time.gnuplot
-	gnuplot benchmarks/initmatrix_speedup.gnuplot
+	gnuplot benchmarks/$(TARGET).gnuplot
+	gnuplot benchmarks/$(TARGET).gnuplot
 
 clean:
 	rm -f $(DEP) $(OBJ)
