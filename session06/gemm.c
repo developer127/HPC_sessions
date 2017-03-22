@@ -38,15 +38,15 @@
 #endif
 
 #ifndef MAX_M
-#define MAX_M   4000
+#define MAX_M   8000
 #endif
 
 #ifndef MAX_N
-#define MAX_N   4000
+#define MAX_N   8000
 #endif
 
 #ifndef MAX_K
-#define MAX_K   4000
+#define MAX_K   8000
 #endif
 
 #ifndef INC_M
@@ -70,15 +70,15 @@
 #endif
 
 #ifndef M_C
-#define M_C     256
+#define M_C     100
 #endif
 
 #ifndef K_C
-#define K_C     256
+#define K_C     100
 #endif
 
 #ifndef N_C
-#define N_C     1024
+#define N_C     100
 #endif
 
 
