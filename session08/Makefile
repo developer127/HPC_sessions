@@ -8,7 +8,7 @@ SOURCES=$(wildcard *.cpp)
 OBJECTS=$(patsubst %.cpp,%.o,$(SOURCES))
 DEPENDENCES=$(OBJECTS:.o=.d)
 
-TARGET=gemm_bench
+TARGET=gemm_blk
 
 all: $(TARGET)
 

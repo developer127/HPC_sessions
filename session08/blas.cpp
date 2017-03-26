@@ -7,65 +7,88 @@
 namespace ulmBLAS {
 
 //------------------------------------------------------------------------------
-// A -> B
+// A <- B
 //------------------------------------------------------------------------------
 
 void
-gecopy(const GeMatrix& A, GeMatrix& B)
+gecopy(std::size_t m, std::size_t n,
+       const double *A, std::ptrdiff_t incRowA, std::ptrdiff_t incColA,
+       double *B, std::ptrdiff_t incRowB, std::ptrdiff_t incColB)
 {
-    assert(A.m == B.m && A.n == B.n);
-    for (std::size_t j=0; j<B.n; ++j) {
-        for (std::size_t i=0; i<B.m; ++i) {
-            B(i,j) = A(i,j);
+    for (std::size_t j=0; j<n; ++j) {
+        for (std::size_t i=0; i<m; ++i) {
+            B[i*incRowB+j*incColB] = A[i*incRowA+j*incColA];
         }
     }
 }
 
 //------------------------------------------------------------------------------
-// Y <- Y + alpha*X
+// Y <- Y + alpha*Yä#
 //------------------------------------------------------------------------------
 
 void
-geaxpy(double alpha, const GeMatrix& X, GeMatrix& Y)
+geaxpy(std::size_t m, std::size_t n,
+       double alpha,
+       const double *X, std::ptrdiff_t incRowX, std::ptrdiff_t incColX,
+       double       *Y, std::ptrdiff_t incRowY, std::ptrdiff_t incColY)
 {
-    assert(X.m == Y.m && X.n == Y.n);
-    if(alpha != 0.0) {
-        for (std::size_t i=0; i<X.m; ++i) {
-            for (std::size_t j=0; j<X.n; ++j) {
-                Y(i,j) += alpha*X(i,j);
-            }
+    for (std::size_t i=0; i<m; ++i) {
+        for (std::size_t j=0; j<n; ++j) {
+            Y[i*incRowY+j*incColY] += alpha*X[i*incRowX+j*incColX];
         }
     }
 }
 
 //------------------------------------------------------------------------------
 // A <- alpha * A
-// if alpha = 0 initialize A with 0
 //------------------------------------------------------------------------------
 
 void
-gescal(double alpha, GeMatrix& X)
+gescal(std::size_t m, std::size_t n,
+       double alpha,
+       double *X, std::ptrdiff_t incRowX, std::ptrdiff_t incColX)
 {
     if (alpha!=1.0) {
-        if(alpha != 0.0) {
-            for (std::size_t i=0; i<X.m; ++i) {
-                for (std::size_t j=0; j<X.n; ++j) {
-                    X(i,j) *= alpha;
+        for (std::size_t i=0; i<m; ++i) {
+            for (std::size_t j=0; j<n; ++j) {
+                X[i*incRowX+j*incColX] *= alpha;
+            }
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+// C <- alpha x * y     rank1 update
+//------------------------------------------------------------------------------
+
+void
+ger(std::size_t m, std::size_t n,
+    double alpha,
+    const double *x, std::ptrdiff_t incX,
+    const double *y, std::ptrdiff_t incY,
+    double *C, std::ptrdiff_t incRowC, std::ptrdiff_t incColC)
+{
+    if (alpha!=1.0) {
+        if (incRowC < incColC) {    //colMajor
+            for (std::size_t j=0; j<n; ++j) {
+                double tmp_y = y[j*incY];
+                for (std::size_t i=0; i<m; ++i) {
+                    C[i*incRowC+j*incColC] += alpha * x[i*incX] * tmp_y;
                 }
             }
-        } else {
-            for (std::size_t i=0; i<X.m; ++i) {
-                for (std::size_t j=0; j<X.n; ++j) {
-                    X(i,j) = 0;
+        } else {                    //rowMajor
+            for (std::size_t i=0; i<m; ++i) {
+                double tmp_x = x[i*incX];
+                for (std::size_t j=0; j<n; ++j) {
+                    C[i*incRowC+j*incColC] += alpha * tmp_x * y[j*incY];
                 }
             }
         }
     }
 }
 
-}   // namespace ulmBlas
 
-
+} // namespace ulmBLAS
 
 //==============================================================================
 // refColMajor
@@ -74,15 +97,19 @@ gescal(double alpha, GeMatrix& X)
 namespace refColMajor {
 
 void
-gemm(double alpha, const GeMatrix& A, const GeMatrix& B,
-     double beta, GeMatrix& C)
+gemm(std::size_t m, std::size_t n, std::size_t k,
+     double alpha,
+     const double *A, std::ptrdiff_t incRowA, std::ptrdiff_t incColA,
+     const double *B, std::ptrdiff_t incRowB, std::ptrdiff_t incColB,
+     double beta,
+     double *C, std::ptrdiff_t incRowC, std::ptrdiff_t incColC)
 {
-    assert(C.m==A.m && C.n==B.n && A.n==B.m);
-    ulmBLAS::gescal(beta, C);
-    for (std::size_t j=0; j<C.n; ++j) {
-        for (std::size_t l=0; l<A.n; ++l) {
-            for (std::size_t i=0; i<C.m; ++i) {
-                C(i,j) += alpha*A(i,l) * B(l,j);
+    ulmBLAS::gescal(m, n, beta, C, incRowC, incColC);
+    for (std::size_t j=0; j<n; ++j) {
+        for (std::size_t l=0; l<k; ++l) {
+            for (std::size_t i=0; i<m; ++i) {
+                C[i*incRowC+j*incColC] += alpha*A[i*incRowA+l*incColA]
+                                               *B[l*incRowB+j*incColB];
             }
         }
     }
@@ -90,7 +117,8 @@ gemm(double alpha, const GeMatrix& A, const GeMatrix& B,
 
 } // namespace refColMajor
 
-/*
+
+
 //==============================================================================
 // simpleBuffer
 //==============================================================================
@@ -114,8 +142,12 @@ double B_[SIMPLE_PUFFER_K_C*SIMPLE_PUFFER_N_C];
 double C_[SIMPLE_PUFFER_M_C*SIMPLE_PUFFER_N_C];
 
 void
-gemm(double alpha, const GeMatrix& A, const GeMatrix& B,
-     double beta, GeMatrix& C)
+gemm(std::size_t m, std::size_t n, std::size_t k,
+     double alpha,
+     const double *A, std::ptrdiff_t incRowA, std::ptrdiff_t incColA,
+     const double *B, std::ptrdiff_t incRowB, std::ptrdiff_t incColB,
+     double beta,
+     double *C, std::ptrdiff_t incRowC, std::ptrdiff_t incColC)
 {
     std::size_t M_C = SIMPLE_PUFFER_M_C;
     std::size_t N_C = SIMPLE_PUFFER_N_C;
@@ -169,4 +201,115 @@ gemm(double alpha, const GeMatrix& A, const GeMatrix& B,
 }
 
 } // namespace simpleBuffer
-*/
+
+
+//==============================================================================
+// blocked
+//==============================================================================
+
+
+#ifndef BLOCKED_MC
+#define BLOCKED_MC 256
+#endif
+
+#ifndef BLOCKED_KC
+#define BLOCKED_KC 256
+#endif
+
+#ifndef BLOCKED_NC
+#define BLOCKED_NC 1024
+#endif
+
+#ifndef BLOCKED_MR
+#define BLOCKED_MR 2
+#endif
+
+#ifndef BLOCKED_NR
+#define BLOCKED_NR 8
+#endif
+
+namespace blocked {
+
+double A_[BLOCKED_MC*BLOCKED_KC];
+double B_[BLOCKED_KC*BLOCKED_NC];
+
+void
+pack_A(std::size_t mc, std::size_t kc,
+       const double *A, std::ptrdiff_t incRowA, std::ptrdiff_t incColA,
+       double *p)
+{
+    std::size_t MR = BLOCKED_MR;
+    std::size_t mp = (mc+MR-1) / MR;
+
+    // ... FIXME
+}
+
+void
+pack_B(std::size_t kc, std::size_t nc,
+       const double *B, std::ptrdiff_t incRowB, std::ptrdiff_t incColB,
+       double *p)
+{
+    std::size_t NR = BLOCKED_NR;
+    std::size_t np = (nc+NR-1) / NR;
+
+    // ... FIXME
+}
+
+void
+ugemm(std::size_t kc, double alpha,
+      const double *A, const double *B,
+      double beta,
+      double *C, std::ptrdiff_t incRowC, std::ptrdiff_t incColC)
+{
+    for (std::size_t k=0; k<kc; ++k) {
+        ulmBLAS::ger(BLOCKED_MR, BLOCKED_NR, alpha,
+                     &A[k*BLOCKED_MR], 1,
+                     &B[k*BLOCKED_NR], 1,
+                     C, incRowC, incColC);
+    }
+}
+
+void
+mgemm(std::size_t mc, std::size_t nc, std::size_t kc,
+      double alpha,
+      const double *A, const double *B,
+      double beta,
+      double *C, std::ptrdiff_t incRowC, std::ptrdiff_t incColC)
+{
+    double C_[BLOCKED_MR*BLOCKED_NR];
+    std::size_t MR = BLOCKED_MR;
+    std::size_t NR = BLOCKED_NR;
+
+    std::size_t mp  = (mc+MR-1) / MR;
+    std::size_t np  = (nc+NR-1) / NR;
+    std::size_t mr_ = mc % MR;
+    std::size_t nr_ = nc % NR;
+
+    // ... FIXME
+}
+
+void
+gemm(std::size_t m, std::size_t n, std::size_t k,
+     double alpha,
+     const double *A, std::ptrdiff_t incRowA, std::ptrdiff_t incColA,
+     const double *B, std::ptrdiff_t incRowB, std::ptrdiff_t incColB,
+     double beta,
+     double *C, std::ptrdiff_t incRowC, std::ptrdiff_t incColC)
+{
+    std::size_t MC = BLOCKED_MC;
+    std::size_t NC = BLOCKED_NC;
+    std::size_t KC = BLOCKED_KC;
+
+    std::size_t mb = (m+MC-1) / MC;
+    std::size_t nb = (n+NC-1) / NC;
+    std::size_t kb = (k+KC-1) / KC;
+
+    std::size_t mc_ = m % MC;
+    std::size_t nc_ = n % NC;
+    std::size_t kc_ = k % KC;
+
+    // ... FIXME
+}
+
+} // namespace blocked
+

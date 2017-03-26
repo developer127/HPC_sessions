@@ -1,7 +1,6 @@
 #include <cstddef> /* needed for std::size_t and std::ptrdiff_t */
 #include <cassert> /* needed for assert */
-//#include <printf.hpp> /* needed for fmt::printf */
-#include <fmt/format.h> /* needed for fmt::printf */
+#include <printf.hpp> /* needed for fmt::printf */
 
 enum class StorageOrder {ColMajor, RowMajor};
 
@@ -32,7 +31,7 @@ struct Matrix {
    void init() {
       for (std::size_t i = 0; i < m; ++i) {
          for (std::size_t j = 0; j < n; ++j) {
-            data[i*incRow + j*incCol] = j * n + i + 1;
+            data[i*incRow + j*incCol] = double(j * m + i + 1);
          }
       }
    }
@@ -56,7 +55,7 @@ struct Matrix {
 void
 copyMatrix(const Matrix& A, Matrix& B)
 {
-    assert(B.n<=A.n||B.m<=A.m);
+    assert(B.n==A.n&&B.m==A.m);
     if(B.incRow < B.incCol) {
         for(std::size_t j = 0; j<B.n; ++j) {
             for(std::size_t i =0; i<B.m; ++i) {
@@ -74,10 +73,10 @@ copyMatrix(const Matrix& A, Matrix& B)
 
 int main() {
    Matrix A(7, 8, StorageOrder::ColMajor);
-   Matrix B(5, 5, StorageOrder::ColMajor);
+   Matrix B(7, 8, StorageOrder::RowMajor);
    A.init();
    copyMatrix(A,B);
-   A(9, 3) = -1;
+   A(5, 3) = -1;
    fmt::printf("A =\n");
    A.print();
    fmt::printf("B =\n");

@@ -4,15 +4,19 @@
 #include <cassert>
 #include <cmath>
 #include <cstddef>
-#include "matrix_class.hpp"
-#include <fmt/printf.hpp> /* needed for fmt::printf */
+#include <printf.hpp> /* needed for fmt::printf */
 
 
 namespace test{
 
-double asumDiffGeMatrix(const GeMatrix& A, const GeMatrix& B);
+double
+asumDiffMatrix(std::size_t m, std::size_t n,
+               const double *A, std::ptrdiff_t incRowA, std::ptrdiff_t incColA,
+               double *B, std::ptrdiff_t incRowB, std::ptrdiff_t incColB);
 
-void printGeMatrixInMemory(GeMatrix& A);
+void
+printGeMatrixInMemory(std::size_t m, std::size_t n,
+                      const double *A);
 
 } // test
 #endif

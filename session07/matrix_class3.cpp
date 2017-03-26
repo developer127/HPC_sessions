@@ -1,5 +1,5 @@
 #include <cstddef> /* needed for std::size_t and std::ptrdiff_t */
-#include <fmt/format.cc> /* needed for fmt::printf */
+#include <printf.hpp> /* needed for fmt::printf */
 
 enum class StorageOrder {ColMajor, RowMajor};
 
@@ -20,7 +20,7 @@ struct Matrix {
     void init() {
         for (std::size_t i = 0; i < m; ++i) {
             for (std::size_t j = 0; j < n; ++j) {
-                data[i*incRow + j*incCol] = j * n + i + 1;
+                data[i*incRow + j*incCol] = double(j * m + i + 1);
             }
          }
     }

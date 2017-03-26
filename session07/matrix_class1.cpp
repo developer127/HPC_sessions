@@ -1,6 +1,5 @@
 #include <cstddef> /* needed for std::size_t and std::ptrdiff_t */
 #include <printf.hpp> /* needed for fmt::printf */
-//#include <fmt/format.cc> /* needed for fmt::printf */
 
 
 struct Matrix {
@@ -14,7 +13,7 @@ struct Matrix {
     {
         for (std::size_t i = 0; i < m; ++i) {
             for (std::size_t j = 0; j < n; ++j) {
-                data[i*incRow + j*incCol] = j * n + i + 1;
+                data[i*incRow + j*incCol] = j * m + i + 1;
             }
         }
     }
@@ -28,13 +27,15 @@ struct Matrix {
             fmt::printf("\n");
         }
     }
-
-    void transpose()
-    {
-        std::swap(m,n);
-        std::swap(incRow,incCol);
-    }
 };
+
+
+void transpose(Matrix& A)
+{
+    std::swap(A.m, A.n);
+    std::swap(A.incRow, A.incCol);
+}
+
 
 
 int main() {
@@ -45,7 +46,7 @@ int main() {
    A.init();
    fmt::printf("A =\n");
    A.print_matrix();
-   A.transpose();
+   transpose(A);
    fmt::printf("A^t =\n");
    A.print_matrix();
 }

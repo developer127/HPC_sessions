@@ -3,27 +3,28 @@
 namespace test {
 
 double
-asumDiffGeMatrix(const GeMatrix& A, const GeMatrix& B)
+asumDiffMatrix(std::size_t m, std::size_t n,
+               const double *A, std::ptrdiff_t incRowA, std::ptrdiff_t incColA,
+               double *B, std::ptrdiff_t incRowB, std::ptrdiff_t incColB)
 {
-    assert(A.m == B.m && A.n == B.n);
 
     double asum = 0;
 
-    for (std::size_t j=0; j<A.n; ++j) {
-        for (std::size_t i=0; i<A.m; ++i) {
-            asum += fabs(B(i,j) - A(i,j));
+    for (std::size_t j=0; j<n; ++j) {
+        for (std::size_t i=0; i<m; ++i) {
+            asum += fabs(B[i*incRowB+j*incColB] - A[i*incRowA+j*incColA]);
         }
     }
     return asum;
 }
 
-void
-printGeMatrixInMemory(GeMatrix& A)
-{
-    std::size_t length = A.m * A.n;
 
-    for(size_t i= 0; i<length; ++i) {
-        fmt::printf("%5.1lf", A.data[i]);
+void
+printGeMatrixInMemory(std::size_t m, std::size_t n,
+                      const double *A)
+{
+    for(size_t i= 0; i<m*n; ++i) {
+        fmt::printf("%5.1lf", A[i]);
     }
     fmt::printf("\n");
 }
