@@ -225,7 +225,7 @@ gemm(std::size_t m, std::size_t n, std::size_t k,
 #endif
 
 #ifndef BLOCKED_NR
-#define BLOCKED_NR 8
+#define BLOCKED_NR 2
 #endif
 
 namespace blocked {

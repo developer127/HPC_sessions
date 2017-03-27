@@ -88,28 +88,52 @@ main()
     using namespace std;
     using namespace test;
 
-    //double A_1[3*4];
-    double B_1[4*3];
-    //double C_1[2*4];
+    double A[3*3];
+    double B[3*3];
+    double C_1[3*3];
+    double C_2[3*3];
 
-    //initMatrix(3, 4, A_1, 1, 3);
-    initMatrix(4, 3, B_1, 1, 4);
-    //initMatrix(2, 4, C_1, 2, 1);
+    initMatrix(3, 3, A, 1, 3);
+    initMatrix(3, 4, B, 3, 1);
+    initMatrix(3, 3, C_1, 3, 1);
+    gecopy(3, 3,
+           C_1, 3, 1,
+           C_2, 3, 1);
 
-    printMatrix(4, 3, B_1, 1, 4);
-    printGeMatrixInMemory(4, 3,
-                          B_1);
+    refColMajor::gemm(3, 3, 3, 1,
+                      A, 1, 3,
+                      B, 3, 1,
+                      1,
+                      C1, 3, 1);
 
-    double B_[4*4];
+    double A_[4*3];
+    double B_[3*4];
+    blocked::pack_A(3,3,
+                    A, 1, 3,
+                    A_);
 
-    blocked::pack_B(4, 3,
-                    B_1, 1, 4,
+    printMatrix(3,3, A, 1, 3);
+    test::printGeMatrixInMemory(3, 3, A);
+    test::printGeMatrixInMemory(4, 3, A_);
+
+    blocked::pack_B(3,3,
+                    B, 3, 1,
                     B_);
 
-    printGeMatrixInMemory(4, 4,
-                          B_);
+    printMatrix(3,3, B, 3, 1);
+    test::printGeMatrixInMemory(3, 3, B);
+    test::printGeMatrixInMemory(3, 4, B_);
 
+    blocked::mgemm(3, 3, 1, 1,
+                   A_, B_,
+                   1,
+                   C2, 3, 1);
 
+    double diff = asumDiffMatrix(3, 3,
+                                 C_1, 3, 1,
+                                 C_2, 3, 1);
+
+    fmt::printf("Differenze: %lf\n", diff);
 /*
     initMatrix(MAXDIM_M, MAXDIM_K, A, 1, MAXDIM_M);
     initMatrix(MAXDIM_K, MAXDIM_N, B, 1, MAXDIM_K);
