@@ -221,11 +221,11 @@ gemm(std::size_t m, std::size_t n, std::size_t k,
 #endif
 
 #ifndef BLOCKED_MR
-#define BLOCKED_MR 4
+#define BLOCKED_MR 2
 #endif
 
 #ifndef BLOCKED_NR
-#define BLOCKED_NR 2
+#define BLOCKED_NR 8
 #endif
 
 namespace blocked {
@@ -313,7 +313,31 @@ mgemm(std::size_t mc, std::size_t nc, std::size_t kc,
     std::size_t mr_ = mc % MR;
     std::size_t nr_ = nc % NR;
 
-    // ... FIXME
+    for (std::size_t j=0; j< np; ++j) {
+        std::size_t nr = (j<np-1 || nr_==0) ? NR : nr_;
+        for (std::size_t i=0; i< mp; ++i) {
+            std::size_t mr = (i<mp-1 || mr_==0) ? MR : mr_;
+            if (mr==MR && nr==NR) {
+                ugemm(kc, alpha,
+                      &A[i*kc*MR], &B[j*kc*NR], beta,
+                      &C[i*MR*incRowC + j*NR*incColC], incRowC, incColC);
+            } else {
+                ulmBLAS::gecopy(mr, nr,
+                                &C[i*MR*incRowC + j*NR*incColC],
+                                incRowC, incColC,
+                                C_, 1, MR);      // C_ is colMajor
+
+                ugemm(kc, alpha,
+                      &A[i*kc*MR], &B[j*kc*NR], beta,
+                      C_, incRowC, incColC);
+
+                ulmBLAS::gecopy(mr, nr,
+                                C_, 1, MR,
+                                &C[i*MR*incRowC + j*NR*incColC],
+                                incRowC, incColC);
+            }
+        }
+    }
 }
 
 void
