@@ -24,9 +24,9 @@ printGeMatrixInMemory(std::size_t m, std::size_t n,
                       const double *A)
 {
     for(size_t i= 0; i<m*n; ++i) {
-        fmt::printf("%5.1lf", A[i]);
+        fmt::printf("%6.1lf", A[i]);
     }
-    fmt::printf("\n");
+    fmt::printf("\n\n");
 }
 
 }       //test

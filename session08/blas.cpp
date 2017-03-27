@@ -221,11 +221,11 @@ gemm(std::size_t m, std::size_t n, std::size_t k,
 #endif
 
 #ifndef BLOCKED_MR
-#define BLOCKED_MR 2
+#define BLOCKED_MR 4
 #endif
 
 #ifndef BLOCKED_NR
-#define BLOCKED_NR 8
+#define BLOCKED_NR 2
 #endif
 
 namespace blocked {
@@ -239,9 +239,23 @@ pack_A(std::size_t mc, std::size_t kc,
        double *p)
 {
     std::size_t MR = BLOCKED_MR;
-    std::size_t mp = (mc+MR-1) / MR;
+    std::size_t mp = (mc+MR-1) / MR;        // nof rowPanels in A
 
-    // ... FIXME
+    if (incRowA < incColA) {                // colMajor
+        for (std::size_t j=0; j<kc; ++j) {
+            for (std::size_t i=0; i< mp*MR; ++i) {
+                std::size_t l = i/MR * kc * MR + j*MR + i%MR;
+                p[l] = (i<mc) ? A[i*incRowA+j*incColA] : 0;
+            }
+        }
+    } else {
+        for (std::size_t i=0; i< mp*MR; ++i) {
+            for (std::size_t j=0; j<kc; ++j) {
+                std::size_t l = i/MR * kc * MR + j*MR + i%MR;
+                p[l] = (i<mc) ? A[i*incRowA+j*incColA] : 0;
+            }
+        }
+    }
 }
 
 void
@@ -250,9 +264,23 @@ pack_B(std::size_t kc, std::size_t nc,
        double *p)
 {
     std::size_t NR = BLOCKED_NR;
-    std::size_t np = (nc+NR-1) / NR;
+    std::size_t np = (nc+NR-1) / NR;        // nof colPanels in B
 
-    // ... FIXME
+    if (incRowB < incColB) {                // colMajor
+        for (std::size_t j=0; j<np*NR; ++j) {
+            for (std::size_t i=0; i<kc ; ++i) {
+                std::size_t l = j/NR * kc * NR + i*NR + j%NR;
+                p[l] = (j<nc) ? B[i*incRowB+j*incColB] : 0;
+            }
+        }
+    } else {
+        for (std::size_t i=0; i<kc ; ++i) {
+            for (std::size_t j=0; j<np*NR; ++j) {
+                std::size_t l = j/NR * kc * NR + i*NR + j%NR;
+                p[l] = (j<nc) ? B[i*incRowB+j*incColB] : 0;
+            }
+        }
+    }
 }
 
 void
