@@ -37,15 +37,15 @@
 #endif
 
 #ifndef MAX_M
-#define MAX_M   7000
+#define MAX_M   4000
 #endif
 
 #ifndef MAX_N
-#define MAX_N   7000
+#define MAX_N   4000
 #endif
 
 #ifndef MAX_K
-#define MAX_K   7000
+#define MAX_K   4000
 #endif
 
 #ifndef INC_M

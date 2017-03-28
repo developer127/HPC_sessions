@@ -1,6 +1,6 @@
 CXX = g++
 CPP = cpp
-CFLAGS = -std=gnu++11 -Wall -g -O3
+CFLAGS = -std=c++11 -Wall -g -O3
 OPTFLAGS = -DCOLMAJOR=1
 
 
