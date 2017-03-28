@@ -386,6 +386,7 @@ mgemm(std::size_t mc, std::size_t nc, std::size_t kc,
                       &A[i*kc*MR], &B[j*kc*NR], beta,
                       &C[i*MR*incRowC + j*NR*incColC], incRowC, incColC);
             } else {
+                /* meine implementierung */
                 ulmBLAS::gecopy(mr, nr,
                                 &C[i*MR*incRowC + j*NR*incColC],
                                 incRowC, incColC,
@@ -399,6 +400,18 @@ mgemm(std::size_t mc, std::size_t nc, std::size_t kc,
                                 C_, 1, MR,
                                 &C[i*MR*incRowC + j*NR*incColC],
                                 incRowC, incColC);
+                /* referenzimplementierung nicht schneller
+                ugemm(kc, alpha,
+                      &A[i*kc*MR], &B[j*kc*NR],
+                      0.0,
+                      C_, 1, MR);
+                ulmBLAS::gescal(mr, nr, beta,
+                                &C[i*MR*incRowC+j*NR*incColC],
+                                incRowC, incColC);
+                ulmBLAS::geaxpy(mr, nr, 1.0, C_, 1, MR,
+                                &C[i*MR*incRowC+j*NR*incColC],
+                                incRowC, incColC);
+                */
             }
         }
     }
