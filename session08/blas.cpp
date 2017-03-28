@@ -225,7 +225,7 @@ gemm(std::size_t m, std::size_t n, std::size_t k,
 #endif
 
 #ifndef BLOCKED_NR
-#define BLOCKED_NR 2
+#define BLOCKED_NR 8
 #endif
 
 namespace blocked {
@@ -245,14 +245,14 @@ pack_A(std::size_t mc, std::size_t kc,
         for (std::size_t j=0; j<kc; ++j) {
             for (std::size_t i=0; i< mp*MR; ++i) {
                 std::size_t l = i/MR * kc * MR + j*MR + i%MR;
-                p[l] = (i<mc) ? A[i*incRowA+j*incColA] : 0;
+                p[l] = (i<mc) ? A[i*incRowA+j*incColA] : 0.0;
             }
         }
     } else {
         for (std::size_t i=0; i< mp*MR; ++i) {
             for (std::size_t j=0; j<kc; ++j) {
                 std::size_t l = i/MR * kc * MR + j*MR + i%MR;
-                p[l] = (i<mc) ? A[i*incRowA+j*incColA] : 0;
+                p[l] = (i<mc) ? A[i*incRowA+j*incColA] : 0.0;
             }
         }
     }
@@ -283,17 +283,81 @@ pack_B(std::size_t kc, std::size_t nc,
     }
 }
 
+/* Der erste Versuch ist elends langsam */
+void
+ugemm1(std::size_t kc, double alpha,
+       const double *A, const double *B,
+       double beta,
+       double *C, std::ptrdiff_t incRowC, std::ptrdiff_t incColC)
+{
+    ulmBLAS::gescal(BLOCKED_MR, BLOCKED_NR, beta,
+                    C, incRowC, incColC);
+    for (std::size_t k=0; k<kc; ++k) {
+        ulmBLAS::ger(BLOCKED_MR, BLOCKED_NR, alpha,
+                     &A[k*BLOCKED_MR], 1,
+                     &B[k*BLOCKED_NR], 1,
+                     C, incRowC, incColC);
+    }
+}
+
+/* Der zweite Versuch etwas schneller aber nicht wirklichw
+ * */
+void
+ugemm2(std::size_t kc, double alpha,
+      const double *A, const double *B,
+      double beta,
+      double *C, std::ptrdiff_t incRowC, std::ptrdiff_t incColC)
+{
+    for (std::size_t k=0; k<kc; ++k) {
+        double beta_ = (k==0) ? beta: 1.0;
+
+        if (incRowC < incColC) {    //colMajor
+            for (std::size_t j=0; j<BLOCKED_NR; ++j) {
+                double tmp_B = B[j+k*BLOCKED_NR];
+                for (std::size_t i=0; i<BLOCKED_MR; ++i) {
+                    C[i*incRowC+j*incColC] *= beta_;
+                    C[i*incRowC+j*incColC] += alpha * A[i+ k*BLOCKED_MR]* tmp_B;
+                }
+            }
+        } else {                    //rowMajor
+            for (std::size_t i=0; i<BLOCKED_MR; ++i) {
+                double tmp_A = A[i+k*BLOCKED_MR];
+                for (std::size_t j=0; j<BLOCKED_NR; ++j) {
+                    C[i*incRowC+j*incColC] *= beta_;
+                    C[i*incRowC+j*incColC] += alpha * tmp_A *B[j+ k*BLOCKED_NR];
+                }
+            }
+        }
+    }
+}
+
+
+/*Die Referenzimplementierung aus späterer session*/
 void
 ugemm(std::size_t kc, double alpha,
       const double *A, const double *B,
       double beta,
       double *C, std::ptrdiff_t incRowC, std::ptrdiff_t incColC)
 {
-    for (std::size_t k=0; k<kc; ++k) {
-        ulmBLAS::ger(BLOCKED_MR, BLOCKED_NR, alpha,
-                     &A[k*BLOCKED_MR], 1,
-                     &B[k*BLOCKED_NR], 1,
-                     C, incRowC, incColC);
+    double P[BLOCKED_MR*BLOCKED_NR];
+    std::size_t MR = BLOCKED_MR;
+    std::size_t NR = BLOCKED_NR;
+
+    for (std::size_t l=0; l<MR*NR; ++l) {
+        P[l] = 0;
+    }
+    for (std::size_t l=0; l<kc; ++l) {
+        for (std::size_t j=0; j<NR; ++j) {
+            for (std::size_t i=0; i<MR; ++i) {
+                P[i+j*MR] += A[i+l*MR]*B[l*NR+j];
+            }
+        }
+    }
+    for (std::size_t j=0; j<NR; ++j) {
+        for (std::size_t i=0; i<MR; ++i) {
+            C[i*incRowC+j*incColC] *= beta;
+            C[i*incRowC+j*incColC] += alpha*P[i+j*MR];
+        }
     }
 }
 
@@ -329,7 +393,7 @@ mgemm(std::size_t mc, std::size_t nc, std::size_t kc,
 
                 ugemm(kc, alpha,
                       &A[i*kc*MR], &B[j*kc*NR], beta,
-                      C_, incRowC, incColC);
+                      C_, 1, MR);
 
                 ulmBLAS::gecopy(mr, nr,
                                 C_, 1, MR,
@@ -360,7 +424,35 @@ gemm(std::size_t m, std::size_t n, std::size_t k,
     std::size_t nc_ = n % NC;
     std::size_t kc_ = k % KC;
 
-    // ... FIXME
+    if (alpha==0.0 || k==0) {
+        ulmBLAS::gescal(m, n, beta, C, incRowC, incColC);
+        return;
+    }
+
+    for (std::size_t j=0; j<nb; ++j) {
+        std::size_t nc = (j<nb-1 || nc_==0) ? NC : nc_;
+        for (std::size_t l=0; l<kb; ++l) {
+            std::size_t kc = (l<kb-1 || kc_==0) ? KC : kc_;
+            double beta_ = (l==0) ? beta : 1.0;
+
+            pack_B(kc, nc,
+                   &B[l*KC*incRowB+j*NC*incColB], incRowB, incColB,
+                   B_);
+
+            for (std::size_t i=0; i<mb; ++i) {
+                std::size_t mc = (i<mb-1 || mc_==0) ? MC : mc_;
+
+                pack_A(mc, kc,
+                       &A[i*MC*incRowA+l*KC*incColA], incRowA, incColA,
+                       A_);
+
+                mgemm(mc, nc, kc, alpha,
+                      A_, B_,
+                      beta_,
+                      &C[i*MC*incRowC+j*NC*incColC], incRowC, incColC);
+            }
+        }
+    }
 }
 
 } // namespace blocked

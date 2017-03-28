@@ -88,53 +88,6 @@ main()
     using namespace std;
     using namespace test;
 
-    double A[3*3];
-    double B[3*3];
-    double C_1[3*3];
-    double C_2[3*3];
-
-    initMatrix(3, 3, A, 1, 3);
-    initMatrix(3, 4, B, 3, 1);
-    initMatrix(3, 3, C_1, 3, 1);
-    gecopy(3, 3,
-           C_1, 3, 1,
-           C_2, 3, 1);
-
-    refColMajor::gemm(3, 3, 3, 1,
-                      A, 1, 3,
-                      B, 3, 1,
-                      1,
-                      C1, 3, 1);
-
-    double A_[4*3];
-    double B_[3*4];
-    blocked::pack_A(3,3,
-                    A, 1, 3,
-                    A_);
-
-    printMatrix(3,3, A, 1, 3);
-    test::printGeMatrixInMemory(3, 3, A);
-    test::printGeMatrixInMemory(4, 3, A_);
-
-    blocked::pack_B(3,3,
-                    B, 3, 1,
-                    B_);
-
-    printMatrix(3,3, B, 3, 1);
-    test::printGeMatrixInMemory(3, 3, B);
-    test::printGeMatrixInMemory(3, 4, B_);
-
-    blocked::mgemm(3, 3, 1, 1,
-                   A_, B_,
-                   1,
-                   C2, 3, 1);
-
-    double diff = asumDiffMatrix(3, 3,
-                                 C_1, 3, 1,
-                                 C_2, 3, 1);
-
-    fmt::printf("Differenze: %lf\n", diff);
-/*
     initMatrix(MAXDIM_M, MAXDIM_K, A, 1, MAXDIM_M);
     initMatrix(MAXDIM_K, MAXDIM_N, B, 1, MAXDIM_K);
     initMatrix(MAXDIM_M, MAXDIM_N, C1, 1, MAXDIM_M);
@@ -146,8 +99,9 @@ main()
     fmt::printf("%5s %5s ", "IRA", "ICA");
     fmt::printf("%5s %5s ", "IRB", "ICB");
     fmt::printf("%5s %5s ", "IRC", "ICC");
-    fmt::printf("%20s %9s", "refColMajor: t", "MFLOPS");
-    fmt::printf("%20s %9s %9s", "refSimpleBuffer: t", "MFLOPS", "diff");
+    fmt::printf("%16s %9s", "refColMajor: t", "MFLOPS");
+    fmt::printf("%16s %9s %9s", "refSimpleBuf: t", "MFLOPS", "diff");
+    fmt::printf("%16s %9s %9s", "blockedGemm: t", "MFLOPS", "diff");
     fmt::printf("\n");
 
     for (std::size_t m = MIN_M, n = MIN_N, k = MIN_K;
@@ -177,7 +131,7 @@ main()
                           BETA,
                           C1, incRowC, incColC);
         t1 = walltime() - t0;
-        fmt::printf("%20.4lf %9.2lf", t1, 2.*m/1000*n/1000*k/t1);
+        fmt::printf("%16.4lf %9.2lf", t1, 2.*m/1000*n/1000*k/t1);
 
         t0 = walltime();
         simpleBuffer::gemm(m, n, k, ALPHA,
@@ -189,7 +143,7 @@ main()
         diff = asumDiffMatrix(m, n,
                               C1, incRowC, incColC,
                               C2, incRowC, incColC);
-        fmt::printf("%20.4lf %9.2lf %9.1e", t1, 2.*m/1000*n/1000*k/t1, diff);
+        fmt::printf("%16.4lf %9.2lf %9.1e", t1, 2.*m/1000*n/1000*k/t1, diff);
 
         t0 = walltime();
         blocked::gemm(m, n, k, ALPHA,
@@ -201,8 +155,8 @@ main()
         diff = asumDiffMatrix(m, n,
                               C1, incRowC, incColC,
                               C3, incRowC, incColC);
-        fmt::printf("%20.4lf %9.2lf %9.1e", t1, 2.*m/1000*n/1000*k/t1, diff);
+        fmt::printf("%16.4lf %9.2lf %9.1e", t1, 2.*m/1000*n/1000*k/t1, diff);
         fmt::printf("\n");
     }
-    return 0;*/
+    return 0;
 }
